@@ -26,8 +26,7 @@
       "tag": "tun-in",
       "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
       "auto_route": true,
-      "strict_route": true,
-      "dns_hijack": ["any:53"]
+      "strict_route": true
     }
   ],
 
@@ -35,7 +34,7 @@
     {
       "type": "urltest",
       "tag": "LADDER",
-      "outbounds": ["T1-REALITY", "T2-XHTTP-CF", "T3-HY2"],
+      "outbounds": ["T1-REALITY", "T2-CF-WS", "T3-HY2"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
       "tolerance": 50
@@ -56,7 +55,7 @@
     },
     {
       "type": "vless",
-      "tag": "T2-XHTTP-CF",
+      "tag": "T2-CF-WS",
       "server": "edge.example-domain.org",
       "server_port": 8443,
       "uuid": "SET_ME_UUID",
@@ -65,7 +64,7 @@
         "server_name": "edge.example-domain.org",
         "utls": { "enabled": true, "fingerprint": "chrome" }
       },
-      "transport": { "type": "xhttp", "path": "/xh", "mode": "packet-up" }
+      "transport": { "type": "ws", "path": "/xh" }
     },
     {
       "type": "hysteria2",

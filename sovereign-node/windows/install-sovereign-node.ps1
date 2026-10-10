@@ -6,7 +6,7 @@
 #  Что делает (идемпотентно, можно запускать повторно):
 #    1. Читает node.env (единственный файл правды)
 #    2. Ставит sing-box (один бинарь) в C:\Program Files\sovereign-node
-#    3. Рендерит конфиг: лестница T1 Reality / T2 XHTTP через Cloudflare / T3 Hysteria2
+#    3. Рендерит конфиг: лестница T1 Reality / T2 WS через Cloudflare / T3 Hysteria2
 #       + раздельная маршрутизация (RU напрямую, всё остальное через лестницу)
 #    4. Регистрирует службу Windows с автоперезапуском и стартует её (TUN-режим)
 #  Если DOMAIN пуст — T2 не включается (включится после provision-edge.ps1).
@@ -68,7 +68,7 @@ if (-not $RenderOnly) {
 $T2BLOCK = @'
     {
       "type": "vless",
-      "tag": "T2-XHTTP-CF",
+      "tag": "T2-CF-WS",
       "server": "__DOMAIN__",
       "server_port": __XP__,
       "uuid": "__UUID__",
@@ -77,11 +77,11 @@ $T2BLOCK = @'
         "server_name": "__DOMAIN__",
         "utls": { "enabled": true, "fingerprint": "chrome" }
       },
-      "transport": { "type": "xhttp", "path": "__XPATH__", "mode": "packet-up" }
+      "transport": { "type": "ws", "path": "__T2PATH__" }
     },
 '@
 
-if ($withT2) { $ladder = @("T1-REALITY","T2-XHTTP-CF","T3-HY2") } else { $ladder = @("T1-REALITY","T3-HY2") }
+if ($withT2) { $ladder = @("T1-REALITY","T2-CF-WS","T3-HY2") } else { $ladder = @("T1-REALITY","T3-HY2") }
 $ladderJson = ($ladder | ForEach-Object { "`"$_`"" }) -join ","
 
 $cfg = @"
@@ -109,8 +109,7 @@ $cfg = @"
       "tag": "tun-in",
       "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
       "auto_route": true,
-      "strict_route": true,
-      "dns_hijack": ["any:53"]
+      "strict_route": true
     }
   ],
   "outbounds": [
@@ -182,9 +181,9 @@ $cfg = $cfg.Replace("__VPS_IP__", $V["VPS_IP"]) `
             .Replace("__HPW__",   $V["HY2_PASSWORD"]) `
             .Replace("__OBFS__",  $V["HY2_OBFS"]) `
             .Replace("__SNI__",   $V["SNI_MASK"]) `
-            .Replace("__XPATH__", $V["XHTTP_PATH"]) `
+            .Replace("__T2PATH__", $V["T2_PATH"]) `
             .Replace("__RP__",    $V["REALITY_PORT"]) `
-            .Replace("__XP__",    $V["XHTTP_PORT"]) `
+            .Replace("__XP__",    $V["T2_PORT"]) `
             .Replace("__HP__",    $V["HY2_PORT"])
 
 $cfgPath = "$Data\config.json"
@@ -208,7 +207,7 @@ if ($svcExists) {
   Start-Sleep 2
 }
 New-Service -Name $Svc -BinaryPathName $binPath -DisplayName "Sovereign Node (sing-box ladder)" -StartupType Automatic | Out-Null
-sc.exe description $Svc "Sovereign Node: sing-box ladder (Reality/XHTTP/Hysteria2), TUN, RU-direct" | Out-Null
+sc.exe description $Svc "Sovereign Node: sing-box ladder (Reality/WS-CDN/Hysteria2), TUN, RU-direct" | Out-Null
 sc.exe failure $Svc reset= 86400 actions= restart/5000/restart/30000/restart/60000 | Out-Null
 Start-Service $Svc
 Start-Sleep 4

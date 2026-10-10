@@ -4,7 +4,7 @@
 #  Запуск:  sudo bash install-server.sh
 #  Ставит ОДИН бинарь sing-box со всеми транспортами:
 #    T1 VLESS+Reality :443/tcp   (маска SNI_MASK)
-#    T2 VLESS+XHTTP   :8443/tcp  (готов к приёму через Cloudflare CDN)
+#    T2 VLESS+WS     :8443/tcp  (готов к приёму через Cloudflare CDN)
 #    T3 Hysteria2     :443/udp   (QUIC, obfs salamander)
 #  Идемпотентно: повторный запуск просто обновляет конфиг и рестартует сервис.
 # ============================================================
@@ -26,8 +26,8 @@ else
 fi
 
 SNI="${SNI_MASK:-www.microsoft.com}"
-XPATH="${XHTTP_PATH:-/xh}"
-RP="${REALITY_PORT:-443}"; XP="${XHTTP_PORT:-8443}"; HP="${HY2_PORT:-443}"
+T2PATH="${T2_PATH:-/xh}"
+RP="${REALITY_PORT:-443}"; XP="${T2_PORT:-8443}"; HP="${HY2_PORT:-443}"
 CN_DOMAIN="${DOMAIN:-$SNI}"
 
 echo "==> 1/7 Архитектура"
@@ -87,7 +87,7 @@ cat > /etc/sovereign-node/config.json <<EOF
     },
     {
       "type": "vless",
-      "tag": "vless-xhttp-t2",
+      "tag": "vless-ws-t2",
       "listen": "::",
       "listen_port": ${XP},
       "users": [ { "name": "sovereign", "uuid": "${UUID_}" } ],
@@ -97,7 +97,7 @@ cat > /etc/sovereign-node/config.json <<EOF
         "certificate_path": "/etc/sovereign-node/cert.pem",
         "key_path": "/etc/sovereign-node/key.pem"
       },
-      "transport": { "type": "xhttp", "path": "${XPATH}" }
+      "transport": { "type": "ws", "path": "${T2PATH}" }
     },
     {
       "type": "hysteria2",
@@ -132,7 +132,7 @@ sysctl --system >/dev/null 2>&1 || true
 
 cat > /etc/systemd/system/sovereign-node.service <<EOF
 [Unit]
-Description=Sovereign Node (sing-box: Reality + XHTTP + Hysteria2)
+Description=Sovereign Node (sing-box: Reality + WS/CDN + Hysteria2)
 After=network-online.target
 Wants=network-online.target
 
@@ -167,7 +167,7 @@ systemctl --no-pager -l status sovereign-node | head -6 || true
 echo
 echo "================= ГОТОВО. КАРТА УЗЛА ================="
 echo "T1 Reality : ${RP}/tcp   SNI-маска ${SNI}   short_id ${SID}"
-echo "T2 XHTTP   : ${XP}/tcp   путь ${XPATH}   ждёт домен: ${CN_DOMAIN}"
+echo "T2 WS      : ${XP}/tcp   путь ${T2PATH}   ждёт домен: ${CN_DOMAIN}"
 echo "T3 Hysteria2: ${HP}/udp  obfs включён"
 echo "Порты держать открытыми: ${RP}/tcp, ${XP}/tcp, ${HP}/udp"
 if [ -z "${DOMAIN}" ]; then

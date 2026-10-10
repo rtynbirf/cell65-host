@@ -23,7 +23,7 @@
     },
     {
       "type": "vless",
-      "tag": "vless-xhttp-t2",
+      "tag": "vless-ws-t2",
       "listen": "::",
       "listen_port": 8443,
       "users": [ { "name": "sovereign", "uuid": "SET_ME_UUID" } ],
@@ -33,7 +33,7 @@
         "certificate_path": "/etc/sovereign-node/cert.pem",
         "key_path": "/etc/sovereign-node/key.pem"
       },
-      "transport": { "type": "xhttp", "path": "/xh" }
+      "transport": { "type": "ws", "path": "/xh" }
     },
     {
       "type": "hysteria2",

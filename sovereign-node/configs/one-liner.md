@@ -26,7 +26,7 @@ curl -fsSL https://raw.githubusercontent.com/rtynbirf/singulyar/main/sovereign-n
 ```
 
 Скрипт сам: скачает последний sing-box, сгенерирует сертификат, запишет конфиг
-(Reality :443/tcp + XHTTP :8443/tcp + Hysteria2 :443/udp), включит BBR,
+(Reality :443/tcp + WS :8443/tcp + Hysteria2 :443/udp), включит BBR,
 зарегистрирует systemd-службу `sovereign-node` с автоперезапуском.
 
 После установки ребёнок проверяет `systemctl status sovereign-node` и

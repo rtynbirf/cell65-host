@@ -126,7 +126,7 @@ sudo bash install-server.sh
 2. Запусти `provision-edge.ps1` — он создаст зону в твоём аккаунте Cloudflare, выставит SSL Full,
    создаст DNS-записи (@ → VPS через CDN, direct → VPS напрямую)
 3. Выстави показанные nameserver'ы у регистратора
-4. Перезапусти `install-sovereign-node.ps1` — он увидит DOMAIN и включит **T2 XHTTP через Cloudflare**
+4. Перезапусти `install-sovereign-node.ps1` — он увидит DOMAIN и включит **T2 WS через Cloudflare**
 
 ---
 
@@ -144,7 +144,7 @@ sudo bash install-server.sh
 
 **Лестница:**
 - **T1 VLESS+Reality** :443/tcp — TLS-отпечаток Chrome, рукопожатие маскируется под www.microsoft.com. Для ТСПУ это обычный HTTPS-сессия к «микрософту».
-- **T2 VLESS+XHTTP** :8443/tcp — обычный HTTP/2-трафик к Cloudflare. Цензор видит соединение с CDN Cloudflare, блокировать которое = отключить интернет.
+- **T2 VLESS+WebSocket** :8443/tcp — TLS-сессия к Cloudflare; WS-рукопожатие спрятано внутри TLS, цензор видит лишь обычный HTTPS к CDN, блокировать который = отключить интернет.
 - **T3 Hysteria2** :443/udp — QUIC с обфускацией salamander (UDP выглядит как случайный шум) + masquerade.
 - Транспорт независимы по протоколу (TLS-TCP / HTTP-CDN / QUIC-UDP) и по пути (прямой / через CDN).
 
