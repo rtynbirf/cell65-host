@@ -1,0 +1,102 @@
+{
+  "_readme": "ПРИМЕР ДЛЯ ЧТЕНИЯ. Рабочий конфиг рендерит install-sovereign-node.ps1 из node.env. Здесь показан вариант С T2 (домен прописан).",
+
+  "log": { "level": "warn", "timestamp": true, "output": "C:\\ProgramData\\sovereign-node\\singbox.log" },
+  "experimental": {
+    "cache_file": { "enabled": true, "path": "C:\\ProgramData\\sovereign-node\\cache.db", "store_rdrc": true },
+    "clash_api": { "external_controller": "127.0.0.1:9090", "default_mode": "rule" }
+  },
+
+  "dns": {
+    "servers": [
+      { "type": "https", "tag": "dns-remote", "server": "8.8.8.8", "detour": "LADDER" },
+      { "type": "udp", "tag": "dns-ru", "server": "77.88.8.8", "detour": "DIRECT" }
+    ],
+    "rules": [
+      { "rule_set": ["geosite-ru"], "server": "dns-ru" }
+    ],
+    "final": "dns-remote",
+    "strategy": "prefer_ipv4",
+    "independent_cache": true
+  },
+
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "address": ["172.19.0.1/30", "fdfe:dcba:9876::1/126"],
+      "auto_route": true,
+      "strict_route": true,
+      "dns_hijack": ["any:53"]
+    }
+  ],
+
+  "outbounds": [
+    {
+      "type": "urltest",
+      "tag": "LADDER",
+      "outbounds": ["T1-REALITY", "T2-XHTTP-CF", "T3-HY2"],
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "3m",
+      "tolerance": 50
+    },
+    {
+      "type": "vless",
+      "tag": "T1-REALITY",
+      "server": "SET_ME_VPS_IP",
+      "server_port": 443,
+      "uuid": "SET_ME_UUID",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.microsoft.com",
+        "utls": { "enabled": true, "fingerprint": "chrome" },
+        "reality": { "enabled": true, "public_key": "SET_ME_REALITY_PUBLIC_KEY", "short_id": "SET_ME_SHORT_ID" }
+      }
+    },
+    {
+      "type": "vless",
+      "tag": "T2-XHTTP-CF",
+      "server": "edge.example-domain.org",
+      "server_port": 8443,
+      "uuid": "SET_ME_UUID",
+      "tls": {
+        "enabled": true,
+        "server_name": "edge.example-domain.org",
+        "utls": { "enabled": true, "fingerprint": "chrome" }
+      },
+      "transport": { "type": "xhttp", "path": "/xh", "mode": "packet-up" }
+    },
+    {
+      "type": "hysteria2",
+      "tag": "T3-HY2",
+      "server": "SET_ME_VPS_IP",
+      "server_port": 443,
+      "password": "SET_ME_HY2_PASSWORD",
+      "obfs": { "type": "salamander", "password": "SET_ME_HY2_OBFS" },
+      "tls": { "enabled": true, "insecure": true, "server_name": "www.microsoft.com" }
+    },
+    { "type": "direct", "tag": "DIRECT" }
+  ],
+
+  "route": {
+    "rules": [
+      { "action": "sniff" },
+      { "protocol": "dns", "action": "hijack-dns" },
+      { "ip_is_private": true, "outbound": "DIRECT" },
+      { "rule_set": ["geosite-ru"], "outbound": "DIRECT" },
+      { "rule_set": ["geoip-ru"], "outbound": "DIRECT" }
+    ],
+    "rule_set": [
+      { "type": "remote", "tag": "geosite-ru", "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-ru.srs",
+        "download_detour": "DIRECT", "update_interval": "24h" },
+      { "type": "remote", "tag": "geoip-ru", "format": "binary",
+        "url": "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs",
+        "download_detour": "DIRECT", "update_interval": "24h" }
+    ],
+    "final": "LADDER",
+    "auto_detect_interface": true,
+    "default_domain_resolver": { "server": "dns-ru" }
+  }
+}

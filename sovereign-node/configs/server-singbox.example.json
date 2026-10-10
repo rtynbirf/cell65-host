@@ -1,0 +1,58 @@
+{
+  "_readme": "ПРИМЕР ДЛЯ ЧТЕНИЯ. Рабочий конфиг рендерит install-server.sh из server.env на VPS.",
+
+  "log": { "level": "warn", "timestamp": true },
+
+  "inbounds": [
+    {
+      "type": "vless",
+      "tag": "vless-reality-t1",
+      "listen": "::",
+      "listen_port": 443,
+      "users": [ { "name": "sovereign", "uuid": "SET_ME_UUID", "flow": "xtls-rprx-vision" } ],
+      "tls": {
+        "enabled": true,
+        "server_name": "www.microsoft.com",
+        "reality": {
+          "enabled": true,
+          "handshake": { "server": "www.microsoft.com", "server_port": 443 },
+          "private_key": "SET_ME_REALITY_PRIVATE_KEY",
+          "short_id": [ "SET_ME_SHORT_ID" ]
+        }
+      }
+    },
+    {
+      "type": "vless",
+      "tag": "vless-xhttp-t2",
+      "listen": "::",
+      "listen_port": 8443,
+      "users": [ { "name": "sovereign", "uuid": "SET_ME_UUID" } ],
+      "tls": {
+        "enabled": true,
+        "server_name": "edge.example-domain.org",
+        "certificate_path": "/etc/sovereign-node/cert.pem",
+        "key_path": "/etc/sovereign-node/key.pem"
+      },
+      "transport": { "type": "xhttp", "path": "/xh" }
+    },
+    {
+      "type": "hysteria2",
+      "tag": "hy2-t3",
+      "listen": "::",
+      "listen_port": 443,
+      "up_mbps": 200,
+      "down_mbps": 200,
+      "users": [ { "name": "sovereign", "password": "SET_ME_HY2_PASSWORD" } ],
+      "obfs": { "type": "salamander", "password": "SET_ME_HY2_OBFS" },
+      "tls": {
+        "enabled": true,
+        "alpn": ["h3"],
+        "certificate_path": "/etc/sovereign-node/cert.pem",
+        "key_path": "/etc/sovereign-node/key.pem"
+      },
+      "masquerade": "https://www.microsoft.com/"
+    }
+  ],
+
+  "outbounds": [ { "type": "direct", "tag": "direct" } ]
+}
