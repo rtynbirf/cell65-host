@@ -7,7 +7,7 @@ on:
 
 jobs:
   server-e2e:
-    name: Сервер: полная установка (Ubuntu 24.04)
+    name: "Сервер: полная установка (Ubuntu 24.04)"
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
           systemctl is-active sovereign-node && echo "env-режим: служба зелёная"
 
   client-render:
-    name: Клиент: рендер и проверка конфига (Windows)
+    name: "Клиент: рендер и проверка конфига (Windows)"
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,23 +88,23 @@ jobs:
           $priv = ($kp | Where-Object { $_ -match 'PrivateKey' }).Split()[-1]
           $pub  = ($kp | Where-Object { $_ -match 'PublicKey' }).Split()[-1]
           $uuid = (& $sb generate uuid).Trim()
-          $nodeenv = @"
-VPS_IP=203.0.113.10
-VPS_IPV6=
-DOMAIN=
-CF_ACCOUNT_ID=00000000000000000000000000000000
-CF_TOKEN=dummy
-VLESS_UUID=$uuid
-REALITY_PUBLIC_KEY=$pub
-REALITY_SHORT_ID=a1b2c3d4e5f60718
-HY2_PASSWORD=Ci_dummy_password_1
-HY2_OBFS=Ci_dummy_obfs_1
-SNI_MASK=www.microsoft.com
-T2_PATH=/xh
-REALITY_PORT=443
-T2_PORT=8443
-HY2_PORT=443
-"@
+          $nodeenv = (@(
+            "VPS_IP=203.0.113.10"
+            "VPS_IPV6="
+            "DOMAIN="
+            "CF_ACCOUNT_ID=00000000000000000000000000000000"
+            "CF_TOKEN=dummy"
+            "VLESS_UUID=$uuid"
+            "REALITY_PUBLIC_KEY=$pub"
+            "REALITY_SHORT_ID=a1b2c3d4e5f60718"
+            "HY2_PASSWORD=Ci_dummy_password_1"
+            "HY2_OBFS=Ci_dummy_obfs_1"
+            "SNI_MASK=www.microsoft.com"
+            "T2_PATH=/xh"
+            "REALITY_PORT=443"
+            "T2_PORT=8443"
+            "HY2_PORT=443"
+          ) -join "`r`n") + "`r`n"
           [IO.File]::WriteAllText("$PWD\sovereign-node\windows\node.env", $nodeenv)
           echo "node.env записан"
 
