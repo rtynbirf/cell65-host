@@ -1,0 +1,125 @@
+name: selftest
+
+on:
+  push:
+    paths: ['sovereign-node/**', '.github/workflows/selftest.yml']
+  workflow_dispatch:
+
+jobs:
+  server-e2e:
+    name: Сервер: полная установка (Ubuntu 24.04)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Фиктивные ключи и server.env
+        run: |
+          VER=$(curl -fsSL https://api.github.com/repos/SagerNet/sing-box/releases/latest | python3 -c 'import sys,json;print(json.load(sys.stdin)["tag_name"].lstrip("v"))')
+          echo "sing-box v$VER"
+          curl -fsSL -o /tmp/sb.tgz "https://github.com/SagerNet/sing-box/releases/download/v${VER}/sing-box-${VER}-linux-amd64.tar.gz"
+          tar -xzf /tmp/sb.tgz -C /tmp
+          SB=/tmp/sing-box-${VER}-linux-amd64/sing-box
+          KP=$($SB generate reality-keypair)
+          PRIV=$(echo "$KP" | grep -oP 'PrivateKey:\s*\K\S+')
+          PUB=$(echo "$KP" | grep -oP 'PublicKey:\s*\K\S+')
+          UUID=$($SB generate uuid)
+          SID=$(openssl rand -hex 4)
+          HPW=$(openssl rand -base64 18 | tr -d '/+=')
+          OBFS=$(openssl rand -base64 12 | tr -d '/+=')
+          {
+            echo "VLESS_UUID=$UUID"
+            echo "REALITY_PRIVATE_KEY=$PRIV"
+            echo "REALITY_PUBLIC_KEY=$PUB"
+            echo "REALITY_SHORT_ID=$SID"
+            echo "HY2_PASSWORD=$HPW"
+            echo "HY2_OBFS=$OBFS"
+            echo "DOMAIN="
+            echo "SNI_MASK=www.microsoft.com"
+            echo "T2_PATH=/xh"
+            echo "REALITY_PORT=443"
+            echo "T2_PORT=8443"
+            echo "HY2_PORT=443"
+          } > sovereign-node/server/server.env
+          echo "ключи сгенерированы (фиктивные)"
+
+      - name: Полная установка сервера
+        run: sudo bash sovereign-node/server/install-server.sh
+
+      - name: Проверки службы и портов
+        run: |
+          systemctl is-active sovereign-node
+          ss -tlnp | grep -q ':443 ' && echo "TCP 443 OK"
+          ss -tlnp | grep -q ':8443 ' && echo "TCP 8443 OK"
+          ss -ulnp | grep -q ':443 ' && echo "UDP 443 OK"
+          sudo /usr/local/bin/sing-box check -c /etc/sovereign-node/config.json && echo "config check OK"
+
+      - name: Режим однострочника (env без server.env)
+        run: |
+          sudo systemctl stop sovereign-node
+          sudo mv sovereign-node/server/server.env /tmp/srv.env.bak
+          set -a; source /tmp/srv.env.bak; set +a
+          sudo -E env VLESS_UUID="$VLESS_UUID" REALITY_PRIVATE_KEY="$REALITY_PRIVATE_KEY" REALITY_SHORT_ID="$REALITY_SHORT_ID" HY2_PASSWORD="$HY2_PASSWORD" HY2_OBFS="$HY2_OBFS" SNI_MASK="$SNI_MASK" bash sovereign-node/server/install-server.sh
+          sudo mv /tmp/srv.env.bak sovereign-node/server/server.env
+          systemctl is-active sovereign-node && echo "env-режим: служба зелёная"
+
+  client-render:
+    name: Клиент: рендер и проверка конфига (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установка sing-box
+        shell: pwsh
+        run: |
+          $rel = Invoke-RestMethod "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
+          $v = $rel.tag_name.TrimStart('v')
+          Invoke-WebRequest "https://github.com/SagerNet/sing-box/releases/download/v$v/sing-box-$v-windows-amd64.zip" -OutFile "$env:TEMP\sb.zip"
+          New-Item -ItemType Directory -Force -Path "C:\Program Files\sovereign-node\bin", "C:\ProgramData\sovereign-node" | Out-Null
+          if (Test-Path "$env:TEMP\sbx") { Remove-Item "$env:TEMP\sbx" -Recurse -Force }
+          Expand-Archive "$env:TEMP\sb.zip" "$env:TEMP\sbx" -Force
+          Copy-Item "$env:TEMP\sbx\sing-box-$v-windows-amd64\*" "C:\Program Files\sovereign-node\bin" -Force
+          & "C:\Program Files\sovereign-node\bin\sing-box.exe" version
+
+      - name: node.env (фиктивные значения, БЕЗ домена)
+        shell: pwsh
+        run: |
+          $sb = "C:\Program Files\sovereign-node\bin\sing-box.exe"
+          $kp = & $sb generate reality-keypair
+          $priv = ($kp | Where-Object { $_ -match 'PrivateKey' }).Split()[-1]
+          $pub  = ($kp | Where-Object { $_ -match 'PublicKey' }).Split()[-1]
+          $uuid = (& $sb generate uuid).Trim()
+          $nodeenv = @"
+VPS_IP=203.0.113.10
+VPS_IPV6=
+DOMAIN=
+CF_ACCOUNT_ID=00000000000000000000000000000000
+CF_TOKEN=dummy
+VLESS_UUID=$uuid
+REALITY_PUBLIC_KEY=$pub
+REALITY_SHORT_ID=a1b2c3d4e5f60718
+HY2_PASSWORD=Ci_dummy_password_1
+HY2_OBFS=Ci_dummy_obfs_1
+SNI_MASK=www.microsoft.com
+T2_PATH=/xh
+REALITY_PORT=443
+T2_PORT=8443
+HY2_PORT=443
+"@
+          [IO.File]::WriteAllText("$PWD\sovereign-node\windows\node.env", $nodeenv)
+          echo "node.env записан"
+
+      - name: RenderOnly без T2
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File sovereign-node\windows\install-sovereign-node.ps1 -RenderOnly
+
+      - name: RenderOnly с доменом (T2 включается)
+        shell: pwsh
+        run: |
+          (Get-Content "$PWD\sovereign-node\windows\node.env") -replace '^DOMAIN=$','DOMAIN=fake.edge.example.org' | Set-Content "$PWD\sovereign-node\windows\node.env"
+          powershell -ExecutionPolicy Bypass -File sovereign-node\windows\install-sovereign-node.ps1 -RenderOnly
+          $cfg = Get-Content "C:\ProgramData\sovereign-node\config.json" -Raw | ConvertFrom-Json
+          $tags = ($cfg.outbounds | ForEach-Object { $_.tag }) -join ','
+          echo "outbounds: $tags"
+          if ($tags -notmatch 'T2-CF-WS') { throw "T2 не появился в лестнице" }
+          if ($cfg.outbounds[0].type -ne 'urltest') { throw "LADDER не первый" }
+          echo "КЛИЕНТ: оба варианта рендера зелёные"
