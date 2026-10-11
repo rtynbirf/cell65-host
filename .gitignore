@@ -1,0 +1,9 @@
+# Секреты — никогда не в git (живут локально / в KeePassXC)
+*.env
+!*.env.example
+keys.txt
+*.zip
+
+# Рабочие конфиги рендерятся установщиками, в репо не попадают
+config.json
+singbox.log

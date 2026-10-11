@@ -13,9 +13,10 @@ ssh root@IP_СЕРВЕРА "bash install-server.sh"
 ## Вариант 2 — однострочник (родители присылают ОДНО сообщение)
 
 Родители подставляют свои значения из `server.env` и присылают ребёнку строку:
+(если используете форк — замените аккаунт в ссылке на свой)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rtynbirf/singulyar/main/sovereign-node/server/install-server.sh \
+curl -fsSL https://raw.githubusercontent.com/rtynbirf/cell65-host/main/sovereign-node/server/install-server.sh \
   | sudo env \
     VLESS_UUID=SET_ME_UUID \
     REALITY_PRIVATE_KEY=SET_ME_REALITY_PRIVATE_KEY \
@@ -29,5 +30,5 @@ curl -fsSL https://raw.githubusercontent.com/rtynbirf/singulyar/main/sovereign-n
 (Reality :443/tcp + WS :8443/tcp + Hysteria2 :443/udp), включит BBR,
 зарегистрирует systemd-службу `sovereign-node` с автоперезапуском.
 
-После установки ребёнок проверяет `systemctl status sovereign-node` и
-присылает родителям обратно только IP сервера.
+После установки родственник проверяет `systemctl status sovereign-node` и
+присылает обратно только IP сервера.

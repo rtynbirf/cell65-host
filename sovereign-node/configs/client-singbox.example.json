@@ -1,5 +1,5 @@
 {
-  "_readme": "ПРИМЕР ДЛЯ ЧТЕНИЯ. Рабочий конфиг рендерит install-sovereign-node.ps1 из node.env. Здесь показан вариант С T2 (домен прописан).",
+  "_readme": "ПРИМЕР ДЛЯ ЧТЕНИЯ. Рабочий конфиг рендерит install-sovereign-node.ps1 из node.env. Здесь показан вариант С T2 (домен прописан). Все значения-плейсхолдеры REPLACE_WITH_* заменяются при рендере.",
 
   "log": { "level": "warn", "timestamp": true, "output": "C:\\ProgramData\\sovereign-node\\singbox.log" },
   "experimental": {
@@ -42,37 +42,37 @@
     {
       "type": "vless",
       "tag": "T1-REALITY",
-      "server": "SET_ME_VPS_IP",
+      "server": "REPLACE_WITH_VPS_IP",
       "server_port": 443,
-      "uuid": "SET_ME_UUID",
+      "uuid": "REPLACE_WITH_UUID",
       "flow": "xtls-rprx-vision",
       "tls": {
         "enabled": true,
         "server_name": "www.microsoft.com",
         "utls": { "enabled": true, "fingerprint": "chrome" },
-        "reality": { "enabled": true, "public_key": "SET_ME_REALITY_PUBLIC_KEY", "short_id": "SET_ME_SHORT_ID" }
+        "reality": { "enabled": true, "public_key": "REPLACE_WITH_REALITY_PUBLIC_KEY", "short_id": "REPLACE_WITH_SHORT_ID" }
       }
     },
     {
       "type": "vless",
       "tag": "T2-CF-WS",
-      "server": "edge.example-domain.org",
+      "server": "edge.example.com",
       "server_port": 8443,
-      "uuid": "SET_ME_UUID",
+      "uuid": "REPLACE_WITH_UUID",
       "tls": {
         "enabled": true,
-        "server_name": "edge.example-domain.org",
+        "server_name": "edge.example.com",
         "utls": { "enabled": true, "fingerprint": "chrome" }
       },
-      "transport": { "type": "ws", "path": "/xh" }
+      "transport": { "type": "ws", "path": "/REPLACE_WITH_T2_PATH" }
     },
     {
       "type": "hysteria2",
       "tag": "T3-HY2",
-      "server": "SET_ME_VPS_IP",
+      "server": "REPLACE_WITH_VPS_IP",
       "server_port": 443,
-      "password": "SET_ME_HY2_PASSWORD",
-      "obfs": { "type": "salamander", "password": "SET_ME_HY2_OBFS" },
+      "password": "REPLACE_WITH_HY2_PASSWORD",
+      "obfs": { "type": "salamander", "password": "REPLACE_WITH_HY2_OBFS" },
       "tls": { "enabled": true, "insecure": true, "server_name": "www.microsoft.com" }
     },
     { "type": "direct", "tag": "DIRECT" }

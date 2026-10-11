@@ -23,7 +23,7 @@ Get-Content (Join-Path $Root "node.env") | ForEach-Object {
   if ($_ -match '^\s*([A-Za-z0-9_]+)\s*=\s*(.*)\s*$') { $V[$Matches[1]] = $Matches[2].Trim() }
 }
 if (-not $V["DOMAIN"])   { Write-Host "DOMAIN пуст в node.env — сначала впиши домен." -ForegroundColor Yellow; exit 1 }
-if (-not $V["CF_TOKEN"]) { Write-Host "CF_TOKEN пуст в node.env — нет мандата на Cloudflare." -ForegroundColor Yellow; exit 1 }
+if (-not $V["CF_TOKEN"]) { Write-Host "CF_TOKEN пуст в node.env — нет доступа к Cloudflare." -ForegroundColor Yellow; exit 1 }
 if (-not $V["VPS_IP"])   { Write-Host "VPS_IP пуст — домен некуда направлять." -ForegroundColor Yellow; exit 1 }
 
 $H = @{ "Authorization" = "Bearer $($V['CF_TOKEN'])"; "Content-Type" = "application/json" }

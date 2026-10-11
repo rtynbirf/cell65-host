@@ -1,5 +1,5 @@
 {
-  "_readme": "ПРИМЕР ДЛЯ ЧТЕНИЯ. Рабочий конфиг рендерит install-server.sh из server.env на VPS.",
+  "_readme": "ПРИМЕР ДЛЯ ЧТЕНИЯ. Рабочий конфиг рендерит install-server.sh из server.env на VPS. Все значения-плейсхолдеры REPLACE_WITH_* заменяются при рендере — руками этот файл не правится и в реальные конфиги не копируется.",
 
   "log": { "level": "warn", "timestamp": true },
 
@@ -9,15 +9,15 @@
       "tag": "vless-reality-t1",
       "listen": "::",
       "listen_port": 443,
-      "users": [ { "name": "sovereign", "uuid": "SET_ME_UUID", "flow": "xtls-rprx-vision" } ],
+      "users": [ { "name": "sovereign", "uuid": "REPLACE_WITH_UUID", "flow": "xtls-rprx-vision" } ],
       "tls": {
         "enabled": true,
         "server_name": "www.microsoft.com",
         "reality": {
           "enabled": true,
           "handshake": { "server": "www.microsoft.com", "server_port": 443 },
-          "private_key": "SET_ME_REALITY_PRIVATE_KEY",
-          "short_id": [ "SET_ME_SHORT_ID" ]
+          "private_key": "REPLACE_WITH_REALITY_PRIVATE_KEY",
+          "short_id": [ "REPLACE_WITH_SHORT_ID" ]
         }
       }
     },
@@ -26,14 +26,14 @@
       "tag": "vless-ws-t2",
       "listen": "::",
       "listen_port": 8443,
-      "users": [ { "name": "sovereign", "uuid": "SET_ME_UUID" } ],
+      "users": [ { "name": "sovereign", "uuid": "REPLACE_WITH_UUID" } ],
       "tls": {
         "enabled": true,
-        "server_name": "edge.example-domain.org",
+        "server_name": "edge.example.com",
         "certificate_path": "/etc/sovereign-node/cert.pem",
         "key_path": "/etc/sovereign-node/key.pem"
       },
-      "transport": { "type": "ws", "path": "/xh" }
+      "transport": { "type": "ws", "path": "/REPLACE_WITH_T2_PATH" }
     },
     {
       "type": "hysteria2",
@@ -42,8 +42,8 @@
       "listen_port": 443,
       "up_mbps": 200,
       "down_mbps": 200,
-      "users": [ { "name": "sovereign", "password": "SET_ME_HY2_PASSWORD" } ],
-      "obfs": { "type": "salamander", "password": "SET_ME_HY2_OBFS" },
+      "users": [ { "name": "sovereign", "password": "REPLACE_WITH_HY2_PASSWORD" } ],
+      "obfs": { "type": "salamander", "password": "REPLACE_WITH_HY2_OBFS" },
       "tls": {
         "enabled": true,
         "alpn": ["h3"],
