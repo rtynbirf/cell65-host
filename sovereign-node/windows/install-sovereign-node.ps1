@@ -173,18 +173,15 @@ __T2_OR_EMPTY__
 if ($withT2) { $cfg = $cfg.Replace("__T2_OR_EMPTY__", $T2BLOCK) }
 else { $cfg = $cfg.Replace("__T2_OR_EMPTY__", "") }
 
-$cfg = $cfg.Replace("__VPS_IP__", $V["VPS_IP"]) `
-            .Replace("__DOMAIN__", $V["DOMAIN"]) `
-            .Replace("__RPUB__",  $V["REALITY_PUBLIC_KEY"]) `
-            .Replace("__SID__",   $V["REALITY_SHORT_ID"]) `
-            .Replace("__UUID__",  $V["VLESS_UUID"]) `
-            .Replace("__HPW__",   $V["HY2_PASSWORD"]) `
-            .Replace("__OBFS__",  $V["HY2_OBFS"]) `
-            .Replace("__SNI__",   $V["SNI_MASK"]) `
-            .Replace("__T2PATH__", $V["T2_PATH"]) `
-            .Replace("__RP__",    $V["REALITY_PORT"]) `
-            .Replace("__XP__",    $V["T2_PORT"]) `
-            .Replace("__HP__",    $V["HY2_PORT"])
+$R = @{
+    "__VPS_IP__" = $V["VPS_IP"];             "__DOMAIN__" = $V["DOMAIN"]
+    "__RPUB__"   = $V["REALITY_PUBLIC_KEY"]; "__SID__"    = $V["REALITY_SHORT_ID"]
+    "__UUID__"   = $V["VLESS_UUID"];         "__HPW__"    = $V["HY2_PASSWORD"]
+    "__OBFS__"   = $V["HY2_OBFS"];           "__SNI__"    = $V["SNI_MASK"]
+    "__T2PATH__" = $V["T2_PATH"];            "__RP__"     = $V["REALITY_PORT"]
+    "__XP__"     = $V["T2_PORT"];            "__HP__"     = $V["HY2_PORT"]
+}
+foreach ($k in $R.Keys) { $cfg = $cfg.Replace($k, [string]$R[$k]) }
 
 $cfgPath = "$Data\config.json"
 [System.IO.File]::WriteAllText($cfgPath, $cfg)
