@@ -10,6 +10,10 @@
 # ============================================================
 set -euo pipefail
 
+# Pinned sing-box version (per AUDIT_CELL65_LLM.md C5)
+# Upgrade: change version + run selftest.yml
+SINGBOX_VERSION="${SINGBOX_VERSION:-v1.10.0}"
+
 [ "$(id -u)" -eq 0 ] || { echo "ЗАПУСКАЙ ЧЕРЕЗ sudo"; exit 1; }
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-.}")" && pwd)"
