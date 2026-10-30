@@ -119,7 +119,7 @@ $cfg = @"
       "outbounds": [$ladderJson],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
-      "tolerance": 50
+      "tolerance": 150
     },
     {
       "type": "vless",
