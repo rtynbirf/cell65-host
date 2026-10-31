@@ -14,7 +14,18 @@ jobs:
 
       - name: Фиктивные ключи и server.env
         run: |
-          VER=$(curl -fsSL https://api.github.com/repos/SagerNet/sing-box/releases/latest | python3 -c 'import sys,json;print(json.load(sys.stdin)["tag_name"].lstrip("v"))')
+          VER=""
+          for i in 1 2 3 4; do
+            VER=$(curl -fsSL --max-time 30 https://api.github.com/repos/SagerNet/sing-box/releases/latest | python3 -c 'import sys,json;print(json.load(sys.stdin)["tag_name"].lstrip("v"))' 2>/dev/null || true)
+            if [ -z "$VER" ]; then
+              # api.github.com без токена ловит общий rate-limit (плавающий 403) —
+              # фолбэк на releases.atom, как в install-server.sh
+              VER=$(curl -fsSL --max-time 30 https://github.com/SagerNet/sing-box/releases.atom | grep -oP '(?<=tag/releases/v)[^<]+' | head -1 || true)
+            fi
+            if [ -n "$VER" ]; then break; fi
+            sleep $((i*10))
+          done
+          if [ -z "$VER" ]; then echo "не смог узнать версию sing-box (4 ретрая исчерпаны)"; exit 1; fi
           echo "sing-box v$VER"
           curl -fsSL -o /tmp/sb.tgz "https://github.com/SagerNet/sing-box/releases/download/v${VER}/sing-box-${VER}-linux-amd64.tar.gz"
           tar -xzf /tmp/sb.tgz -C /tmp
@@ -71,7 +82,18 @@ jobs:
       - name: Установка sing-box
         shell: pwsh
         run: |
-          $rel = Invoke-RestMethod "https://api.github.com/repos/SagerNet/sing-box/releases/latest"
+          $rel = $null
+          for ($i = 1; $i -le 4; $i++) {
+            try { $rel = Invoke-RestMethod "https://api.github.com/repos/SagerNet/sing-box/releases/latest"; break }
+            catch { Start-Sleep -Seconds (10 * $i) }
+          }
+          if (-not $rel) {
+            # api.github.com без токена ловит общий rate-limit — фолбэк на releases.atom
+            $atom = (Invoke-WebRequest -UseBasicParsing "https://github.com/SagerNet/sing-box/releases.atom").Content
+            $tag = ([regex]::Matches($atom, 'tag/releases/v([^<]+)') | Select-Object -First 1).Groups[1].Value
+            if (-not $tag) { throw "не смог узнать версию sing-box (ретраи исчерпаны)" }
+            $rel = [pscustomobject]@{ tag_name = "v$tag" }
+          }
           $v = $rel.tag_name.TrimStart('v')
           Invoke-WebRequest "https://github.com/SagerNet/sing-box/releases/download/v$v/sing-box-$v-windows-amd64.zip" -OutFile "$env:TEMP\sb.zip"
           New-Item -ItemType Directory -Force -Path "C:\Program Files\sovereign-node\bin", "C:\ProgramData\sovereign-node" | Out-Null
