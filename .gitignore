@@ -13,3 +13,5 @@ singbox.log
 Thumbs.db
 *.pyc
 __pycache__/
+
+totp.seed
