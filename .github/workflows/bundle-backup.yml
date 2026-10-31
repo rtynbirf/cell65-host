@@ -18,7 +18,7 @@ jobs:
         run: git bundle create backup.bundle --all
       - name: Проверка целостности bundle
         run: git bundle verify backup.bundle
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: git-bundle-cell65-host-${{ github.run_id }}
           path: backup.bundle
