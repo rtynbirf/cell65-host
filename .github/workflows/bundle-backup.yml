@@ -1,0 +1,25 @@
+name: bundle-backup
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # понедельник 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: git bundle --all
+        run: git bundle create backup.bundle --all
+      - name: Проверка целостности bundle
+        run: git bundle verify backup.bundle
+      - uses: actions/upload-artifact@v4
+        with:
+          name: git-bundle-cell65-host-${{ github.run_id }}
+          path: backup.bundle
+          retention-days: 90
