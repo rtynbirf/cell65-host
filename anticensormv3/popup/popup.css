@@ -26,3 +26,27 @@ body { width: 320px; margin: 0; font: 13px/1.45 "Segoe UI", system-ui, sans-seri
 .dim { color: var(--dim); font-size: 10.5px; text-align: right; }
 button.primary { border: none; background: var(--accent2); color: #fff; border-radius: 8px; padding: 8px 16px; cursor: pointer; font: inherit; font-weight: 600; }
 button.primary:hover { background: var(--accent); }
+
+/* Быстрый старт */
+.quick { padding: 12px 14px 2px; }
+.quick .big { width: 100%; padding: 10px 12px; font-size: 13px; }
+.qnote { color: var(--dim); font-size: 10.5px; margin-top: 6px; text-align: center; }
+.qrow { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.qrow .mini { border: 1px solid var(--line); background: transparent; color: var(--text); border-radius: 7px; padding: 5px 10px; cursor: pointer; font-size: 11px; }
+.qrow .mini:hover { border-color: var(--accent); }
+.qres { font-size: 11px; color: var(--dim); }
+.qres.ok { color: #4ade80; }
+.qres.err { color: #f87171; }
+
+/* Панель «НАСТРОЙКИ узла» */
+.nodepanel { border-top: 1px solid var(--line); padding: 8px 14px 4px; }
+.linklike { border: none; background: none; color: var(--dim); cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .4px; padding: 0; }
+.linklike:hover { color: var(--text); }
+.nodebody { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 6px; }
+.nrow { display: grid; grid-template-columns: 92px 1fr 74px; gap: 6px; }
+.nrow input, .nrow select { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 8px; font: inherit; font-size: 12px; width: 100%; }
+.nrow input:focus, .nrow select:focus { outline: none; border-color: var(--accent); }
+.nrow.radios { grid-template-columns: 1fr 1fr; }
+.nrow.radios label { display: flex; gap: 6px; align-items: center; font-size: 12px; cursor: pointer; }
+.nrow .qrow { margin-top: 0; }
+.nrow .qrow .primary { padding: 7px 12px; font-size: 12px; }

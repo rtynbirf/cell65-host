@@ -1,5 +1,6 @@
 // «Антицензор MV3» — страница настроек.
 // Всё взаимодействие со SW — через chrome.runtime.sendMessage.
+import { QUICK_PACS } from '../lib/defaults.js';
 
 const $ = (id) => document.getElementById(id);
 const LIST_MODES = ['pac', 'global', 'direct'];
@@ -55,6 +56,10 @@ async function load() {
     r.checked = r.value === cfg.mode;
   }
   $('pacScope').value = cfg.pacScope || 'list';
+  for (const r of document.querySelectorAll('input[name=pacSource]')) {
+    r.checked = r.value === (cfg.pacSource || 'local');
+  }
+  $('pacUrl').value = cfg.pacUrl || '';
   $('proxyScheme').value = cfg.proxyScheme;
   $('proxyHost').value = cfg.proxyHost;
   $('proxyPort').value = cfg.proxyPort;
@@ -79,6 +84,8 @@ async function collectAndSave() {
   const next = {
     mode: modeInput ? modeInput.value : 'pac',
     pacScope: $('pacScope').value,
+    pacSource: (document.querySelector('input[name=pacSource]:checked') || {}).value || 'local',
+    pacUrl: $('pacUrl').value.trim(),
     proxyScheme: $('proxyScheme').value,
     proxyHost: $('proxyHost').value.trim() || '127.0.0.1',
     proxyPort: Math.max(1, Math.min(65535, Number($('proxyPort').value) || 1080)),
@@ -107,7 +114,10 @@ function bindAutoSave() {
   for (const sel of ['proxyScheme', 'pacScope']) {
     $(sel).addEventListener('change', collectAndSave);
   }
-  for (const sel of ['proxyHost', 'proxyPort', 'proxyUser', 'proxyPass', 'antizensor', 'exceptions']) {
+  for (const r of document.querySelectorAll('input[name=pacSource]')) {
+    r.addEventListener('change', collectAndSave);
+  }
+  for (const sel of ['proxyHost', 'proxyPort', 'proxyUser', 'proxyPass', 'antizensor', 'exceptions', 'pacUrl']) {
     $(sel).addEventListener('input', debounced);
   }
   for (const sel of ['proxyAuthEnabled', 'blockAds', 'blockTrackers', 'badgeCount', 'webrtcHideIp']) {
@@ -126,6 +136,35 @@ function bindActions() {
 
   $('btnOpenDoh').addEventListener('click', () => {
     chrome.tabs.create({ url: 'chrome://settings/security' });
+  });
+
+  $('btnAzUrl').addEventListener('click', () => {
+    $('pacUrl').value = QUICK_PACS.antizapret.urls[0];
+    $('pacCheckResult').textContent = '';
+    collectAndSave();
+  });
+
+  $('btnCheckPac').addEventListener('click', async () => {
+    const url = $('pacUrl').value.trim();
+    const out = $('pacCheckResult');
+    if (!/^https?:\/\//i.test(url)) {
+      out.textContent = 'Введите URL, начинающийся с http(s)://';
+      return;
+    }
+    out.textContent = 'Проверяю…';
+    const res = await send({ type: 'checkPacUrl', url });
+    if (!res.ok) {
+      out.textContent = 'Ошибка сети: ' + (res.error || '');
+      return;
+    }
+    if (res.status === 200 && res.hasFindProxy) {
+      out.textContent = `✓ PAC доступен (${res.bytes} байт), FindProxyForURL найден`;
+    } else if (res.status === 403) {
+      out.textContent = 'HTTP 403 — сервис работает только с RU-гео (так задумано сервисом). Из RU-браузера откроется; вне RU используйте свой узел (§2 / попап).';
+    } else {
+      out.textContent = `HTTP ${res.status}` +
+        (res.error ? ` · ${res.error}` : res.hasFindProxy ? ' · PAC-функция найдена' : ' · FindProxyForURL не найден');
+    }
   });
 
   $('btnPickHosts').addEventListener('click', () => $('fileHosts').click());

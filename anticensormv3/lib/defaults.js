@@ -11,6 +11,8 @@ export const DEFAULTS = Object.freeze({
   //   direct — без прокси
   mode: 'pac',
   pacScope: 'list',          // 'list' — по списку; 'all' — всё, кроме исключений
+  pacSource: 'local',        // 'local' — PAC из своего списка; 'url' — внешний PAC-файл (напр., «АнтиЗапрет»)
+  pacUrl: '',                // URL внешнего PAC (используется при pacSource='url')
   proxyScheme: 'socks5',     // http | https | socks5
   proxyHost: '127.0.0.1',
   proxyPort: 1080,
@@ -30,6 +32,21 @@ export const DEFAULTS = Object.freeze({
   webrtcHideIp: true,
   // Показывать счётчик заблокированных запросов на иконке (DNR displayActionCountAsBadgeText)
   badgeCount: true
+});
+
+// Публичные PAC-сервисы для кнопки «Работает сразу».
+// URL взяты с официальных страниц сервиса «АнтиЗапрет» (антзапрет.prostovpn.org,
+// зеркало antizapret-1); проверены 2026-10-31: прямой запрос PAC из песочницы
+// вне RU возвращает 403 "Your geoip is not RU... THE SERVICE WORKS ONLY IN RUSSIA!"
+// — т.е. сервис работает только с RU-гео (см. docs/SOURCES.md).
+export const QUICK_PACS = Object.freeze({
+  antizapret: {
+    label: 'публичный «АнтиЗапрет»',
+    urls: [
+      'https://antizapret.prostovpn.org/proxy.pac',
+      'https://p.thenewone.lol:8443/proxy.pac'
+    ]
+  }
 });
 
 export function clone(obj) {

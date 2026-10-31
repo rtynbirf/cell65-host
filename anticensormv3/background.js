@@ -10,7 +10,7 @@
 //   5. Журнал ошибок прокси (chrome.proxy.onProxyError) — кольцевой буфер 50.
 //   6. Бейдж-счётчик блокировок (displayActionCountAsBadgeText).
 
-import { DEFAULTS, clone } from './lib/defaults.js';
+import { DEFAULTS, clone, QUICK_PACS } from './lib/defaults.js';
 import { buildProxyConfig } from './lib/pac-engine.js';
 import {
   setStaticToggles,
@@ -175,6 +175,60 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         await chrome.storage.local.set({ cfg: clone(DEFAULTS) });
         await applyAll('reset');
         sendResponse({ ok: true });
+        return;
+      }
+      if (type === 'quickAntizapret') {
+        // «Работает сразу»: внешний PAC публичного сервиса «АнтиЗапрет».
+        const cfg = await getCfg();
+        const next = Object.assign({}, cfg, {
+          mode: 'pac',
+          pacSource: 'url',
+          pacUrl: QUICK_PACS.antizapret.urls[0]
+        });
+        await chrome.storage.local.set({ cfg: next });
+        await applyAll('quick-antizapret');
+        sendResponse({ ok: true, pacUrl: next.pacUrl });
+        return;
+      }
+      if (type === 'setNode') {
+        // «НАСТРОЙКИ» в попапе: впиши IP узла → «Сохранить и применить».
+        const cfg = await getCfg();
+        const host = String(msg.host || '').trim();
+        if (!host) {
+          sendResponse({ ok: false, error: 'empty-host' });
+          return;
+        }
+        const next = Object.assign({}, cfg, {
+          proxyHost: host,
+          proxyPort: Math.max(1, Math.min(65535, Number(msg.port) || 1080)),
+          proxyScheme: ['http', 'https', 'socks5'].includes(msg.scheme) ? msg.scheme : cfg.proxyScheme,
+          mode: msg.scope === 'pac' ? 'pac' : 'global',
+          pacSource: 'local'
+        });
+        await chrome.storage.local.set({ cfg: next });
+        await applyAll('set-node');
+        sendResponse({ ok: true });
+        return;
+      }
+      if (type === 'checkPacUrl') {
+        // Проверка доступности PAC-URL (из service worker, есть host_permissions).
+        const url = String(msg.url || '');
+        if (!/^https?:\/\//i.test(url)) {
+          sendResponse({ ok: false, error: 'bad-url' });
+          return;
+        }
+        try {
+          const resp = await fetch(url, { cache: 'no-store' });
+          const text = await resp.text();
+          sendResponse({
+            ok: true,
+            status: resp.status,
+            bytes: text.length,
+            hasFindProxy: /FindProxyForURL/.test(text)
+          });
+        } catch (e) {
+          sendResponse({ ok: true, status: 0, error: String(e && e.message || e) });
+        }
         return;
       }
       sendResponse({ ok: false, error: 'unknown-type' });

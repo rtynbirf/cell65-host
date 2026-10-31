@@ -1,5 +1,6 @@
 // Функциональный тест генератора PAC «Антицензор» (node, без браузера).
 import { buildPacData, buildProxyConfig, normalizeDomains } from '../anticensormv3/lib/pac-engine.js';
+import { QUICK_PACS } from '../anticensormv3/lib/defaults.js';
 import vm from 'node:vm';
 
 let failed = 0;
@@ -75,6 +76,16 @@ expect(JSON.stringify(nd) === JSON.stringify(['example.com', 'blocked.org', 'dot
 console.log('== PAC: mandatory/структура chrome.proxy ==');
 const pc = buildProxyConfig(cfg);
 expect(pc.mode === 'pac_script' && pc.pacScript.mandatory === false && typeof pc.pacScript.data === 'string', 'pac_script {data, mandatory:false}');
+
+console.log('== PAC url-режим (внешний PAC, напр. «АнтиЗапрет») ==');
+const u = buildProxyConfig({ mode: 'pac', pacSource: 'url', pacUrl: 'https://antizapret.prostovpn.org/proxy.pac' });
+expect(u.mode === 'pac_script' && u.pacScript.url === 'https://antizapret.prostovpn.org/proxy.pac' && u.pacScript.mandatory === false, 'pacScript {url, mandatory:false}');
+expect(u.pacScript.data === undefined, 'data не задаётся в url-режиме');
+const l = buildProxyConfig({ mode: 'pac', pacSource: 'local', pacUrl: 'https://x.example/proxy.pac' });
+expect(typeof l.pacScript.data === 'string' && l.pacScript.url === undefined, 'local: data есть, url нет');
+const eEmpty = buildProxyConfig({ mode: 'pac', pacSource: 'url', pacUrl: '' });
+expect(typeof eEmpty.pacScript.data === 'string', 'url-режим с пустым URL → откат на локальный PAC');
+expect(QUICK_PACS.antizapret.urls.length === 2 && QUICK_PACS.antizapret.urls.every((x) => /^https:\/\//.test(x)), 'QUICK_PACS.antizapret: 2 https-URL');
 
 if (failed) {
   console.error(`\n${failed} ТЕСТОВ УПАЛО`);

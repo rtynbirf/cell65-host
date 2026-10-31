@@ -132,6 +132,15 @@ export function buildProxyConfig(cfg) {
     };
   }
   // режим 'pac' (по умолчанию)
+  if (cfg.pacSource === 'url' && cfg.pacUrl) {
+    // Внешний PAC-файл по URL (например, публичный «АнтиЗапрет»).
+    // Chrome сам скачивает его; mandatory=false → при сбое загрузки сеть
+    // откатывается на DIRECT (PacScript.url — официальное поле доков proxy API).
+    return {
+      mode: 'pac_script',
+      pacScript: { url: cfg.pacUrl, mandatory: false }
+    };
+  }
   return {
     mode: 'pac_script',
     pacScript: {

@@ -23,11 +23,20 @@ function render(res) {
     btn.classList.toggle('active', btn.dataset.mode === cfg.mode);
   }
   const on = cfg.mode !== 'direct';
-  $('state').textContent = on ? (cfg.mode === 'global' ? 'GLOBAL' : 'PAC · ON') : 'OFF';
+  const azMode = on && cfg.mode === 'pac' && cfg.pacSource === 'url' && cfg.pacUrl;
+  $('state').textContent = on ? (cfg.mode === 'global' ? 'GLOBAL' : azMode ? 'PAC · AZ' : 'PAC · ON') : 'OFF';
   $('state').className = 'state ' + (on ? 'on' : 'off');
-  $('proxy').textContent = cfg.mode === 'direct'
-    ? '—'
-    : `${cfg.proxyScheme}://${cfg.proxyHost}:${cfg.proxyPort}`;
+  let proxyText;
+  if (cfg.mode === 'direct') proxyText = '—';
+  else if (azMode) { try { proxyText = 'PAC: ' + new URL(cfg.pacUrl).host; } catch (_) { proxyText = 'PAC (URL)'; } }
+  else proxyText = `${cfg.proxyScheme}://${cfg.proxyHost}:${cfg.proxyPort}`;
+  $('proxy').textContent = proxyText;
+  $('pacSrc').textContent = cfg.mode !== 'pac'
+    ? '— (режим ' + (cfg.mode === 'global' ? 'весь трафик' : 'напрямую') + ')'
+    : azMode ? 'внешний PAC-файл (URL)' : 'свой список (' + (cfg.antizensor || []).length + ')';
+  $('nodeHost').value = cfg.proxyHost || '';
+  $('nodePort').value = cfg.proxyPort || 1080;
+  $('nodeScheme').value = cfg.proxyScheme || 'socks5';
   const b = [];
   if (cfg.blockAds) b.push('реклама');
   if (cfg.blockTrackers) b.push('трекеры');
@@ -47,6 +56,8 @@ async function setMode(mode) {
   const res = await send({ type: 'getSummary' });
   if (!res.ok) return;
   const cfg = Object.assign({}, res.cfg, { mode });
+  // Кнопка «PAC · список» возвращает к собственному списку расширения
+  if (mode === 'pac' && cfg.pacSource === 'url') cfg.pacSource = 'local';
   await chrome.storage.local.set({ cfg });
   load();
 }
@@ -60,6 +71,51 @@ async function toggleSetting(key, checked) {
   load();
 }
 
+function setQ(elId, text, okClass) {
+  const el = $(elId);
+  el.textContent = text;
+  el.className = 'qres' + (okClass === true ? ' ok' : okClass === false ? ' err' : '');
+}
+
+async function quickAntizapret() {
+  const res = await send({ type: 'quickAntizapret' });
+  setQ('quickResult', res.ok ? '✓ включён PAC «АнтиЗапрет»' : 'ошибка: ' + (res.error || 'нет ответа'), res.ok);
+  load();
+}
+
+async function checkQuick() {
+  const res = await send({ type: 'getSummary' });
+  if (!res.ok) return;
+  const url = res.cfg.pacUrl;
+  if (!url) { setQ('quickResult', 'PAC-URL не задан', false); return; }
+  setQ('quickResult', 'проверяю…');
+  const chk = await send({ type: 'checkPacUrl', url });
+  if (!chk.ok) { setQ('quickResult', 'сеть недоступна', false); return; }
+  if (chk.status === 200 && chk.hasFindProxy) {
+    setQ('quickResult', `✓ PAC доступен (${chk.bytes} байт) — работаем`, true);
+  } else if (chk.status === 403) {
+    setQ('quickResult', '403: сервис пускает только RU-гео → впишите свой узел в «НАСТРОЙКАХ»', false);
+  } else if (chk.error) {
+    setQ('quickResult', `HTTP ${chk.status} · ${chk.error}`, false);
+  } else {
+    setQ('quickResult', `HTTP ${chk.status}` + (chk.hasFindProxy ? ' · PAC есть' : ' · это не PAC-файл'), false);
+  }
+}
+
+async function saveNode() {
+  const scopeInput = document.querySelector('input[name=nodeScope]:checked');
+  const res = await send({
+    type: 'setNode',
+    host: $('nodeHost').value,
+    port: $('nodePort').value,
+    scheme: $('nodeScheme').value,
+    scope: scopeInput ? scopeInput.value : 'global'
+  });
+  if (res.ok) setQ('nodeResult', '✓ сохранено и применено', true);
+  else setQ('nodeResult', res.error === 'empty-host' ? 'введите IP/хост узла' : 'ошибка: ' + (res.error || ''), false);
+  load();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   load();
   for (const btn of document.querySelectorAll('.modes button')) {
@@ -69,4 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
   $('blockTrackers').addEventListener('change', (e) => toggleSetting('blockTrackers', e.target.checked));
   $('webrtcHideIp').addEventListener('change', (e) => toggleSetting('webrtcHideIp', e.target.checked));
   $('btnOptions').addEventListener('click', () => chrome.runtime.openOptionsPage());
+  $('btnQuick').addEventListener('click', quickAntizapret);
+  $('btnQuickCheck').addEventListener('click', checkQuick);
+  $('btnNodeToggle').addEventListener('click', () => {
+    const b = $('nodeBody');
+    b.hidden = !b.hidden;
+    $('btnNodeToggle').textContent = b.hidden ? 'НАСТРОЙКИ узла ▾' : 'НАСТРОЙКИ узла ▴';
+  });
+  $('btnNodeSave').addEventListener('click', saveNode);
 });

@@ -11,6 +11,15 @@
     <span id="state" class="state">…</span>
   </div>
 
+  <div class="quick">
+    <button id="btnQuick" class="primary big">▶ Работает сразу: публичный «АнтиЗапрет»</button>
+    <div class="qnote">проксирует только заблокированные сайты из реестра РФ · вне RU-гео сервис отвечает 403</div>
+    <div class="qrow">
+      <button id="btnQuickCheck" class="mini">Проверить</button>
+      <span id="quickResult" class="qres"></span>
+    </div>
+  </div>
+
   <div class="modes">
     <button data-mode="pac">PAC · список</button>
     <button data-mode="global">Всё через прокси</button>
@@ -19,9 +28,33 @@
 
   <div class="info">
     <div class="kv"><span>Прокси</span><b id="proxy">…</b></div>
+    <div class="kv"><span>PAC-источник</span><b id="pacSrc">…</b></div>
     <div class="kv"><span>Блокировка</span><b id="blocking">…</b></div>
     <div class="kv"><span>Дин. правил</span><b id="dyn">…</b></div>
     <div class="kv err" id="lastErrRow" hidden><span>Ошибка прокси</span><b id="lastErr">…</b></div>
+  </div>
+
+  <div class="nodepanel">
+    <button id="btnNodeToggle" class="linklike">НАСТРОЙКИ узла ▾</button>
+    <div class="nodebody" id="nodeBody" hidden>
+      <div class="nrow">
+        <select id="nodeScheme" title="Схема">
+          <option value="socks5">SOCKS5</option>
+          <option value="http">HTTP</option>
+          <option value="https">HTTPS</option>
+        </select>
+        <input type="text" id="nodeHost" placeholder="IP узла / хост" spellcheck="false">
+        <input type="number" id="nodePort" placeholder="1080" min="1" max="65535">
+      </div>
+      <div class="nrow radios">
+        <label><input type="radio" name="nodeScope" value="global" checked> весь трафик</label>
+        <label><input type="radio" name="nodeScope" value="pac"> по списку PAC</label>
+      </div>
+      <div class="qrow">
+        <button id="btnNodeSave" class="primary">Сохранить и применить</button>
+        <span id="nodeResult" class="qres"></span>
+      </div>
+    </div>
   </div>
 
   <div class="toggles">
@@ -31,8 +64,8 @@
   </div>
 
   <div class="foot">
-    <button id="btnOptions" class="primary">Настройки</button>
-    <span class="dim">список PAC редактируется в настройках</span>
+    <button id="btnOptions" class="primary">Все настройки</button>
+    <span class="dim">список PAC и исключения — в настройках</span>
   </div>
 
   <script src="popup.js" type="module"></script>

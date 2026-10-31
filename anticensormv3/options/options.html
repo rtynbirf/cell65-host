@@ -43,6 +43,18 @@
           <option value="all">Всё, кроме исключений</option>
         </select>
       </div>
+      <div class="pacsrc">
+        <span class="lbl">Источник PAC-скрипта (для режима PAC):</span>
+        <label class="check"><input type="radio" name="pacSource" value="local"> Свой список «Антицензор» — PAC генерируется расширением</label>
+        <label class="check"><input type="radio" name="pacSource" value="url"> Внешний PAC-файл по URL (публичный «АнтиЗапрет» и т.п.)</label>
+        <div class="row">
+          <input type="text" id="pacUrl" placeholder="https://antizapret.prostovpn.org/proxy.pac" style="flex:1">
+          <button id="btnAzUrl" class="ghost">Вставить «АнтиЗапрет»</button>
+          <button id="btnCheckPac" class="ghost">Проверить</button>
+        </div>
+        <div id="pacCheckResult" class="hint"></div>
+        <p class="hint">«АнтиЗапрет» проксирует только заблокированные сайты из реестра РФ и отвечает 403 вне RU-гео (проверено 31.10.2026, цитата сервиса — в docs/SOURCES.md). Не в RU? Впишите свой узел в §2 или в попапе.</p>
+      </div>
     </section>
 
     <!-- 2. Сервер -->
