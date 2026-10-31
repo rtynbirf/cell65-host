@@ -1,5 +1,14 @@
 ﻿# ==============================================================================
-#  ANTICENSOR FREE AUTOPILOT v1.2 — бесплатный маршрут, настраивает всё сам
+#  ANTICENSOR FREE AUTOPILOT v1.3 — бесплатный маршрут, настраивает всё сам
+#  ЧЕЛЛОГ v1.3 (лог Хозяина 2026-10-31: встроенные мосты у провайдера добиты —
+#  meek доходит до 20% и канал умирает, snowflake режется наголову):
+#   - Psiphon теперь ПЕРВЫЙ в цепочке PAC: 1080 -> 8080 -> 9050 -> 9150 -> DIRECT,
+#     чтобы мёртвый tor не тормозил каждую страницу.
+#   - если tor не подключился — скрипт сам глушит свой tor.exe, чтобы браузер
+#     не вис на мёртвом порту (ярлык автозапуска остаётся).
+#   - в кандидаты транспортов добавлен lyrebird.exe: в новых Tor Browser
+#     obfs4proxy переименован в lyrebird — без этого webtunnel-мосты из
+#     bridges.txt были бы пропущены.
 #  ЧЕЛЛОГ v1.2:
 #   - мосты прописываются теперь и САМОМУ Tor Browser (firefox.exe из коробки):
 #     его torrc чистится от старых Bridge/ClientTransportPlugin/UseBridges и
@@ -37,7 +46,7 @@ $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $RAW_PAC = 'https://raw.githubusercontent.com/rtynbirf/cell65-host/main/sovereign-node/pac/anticensor.pac'
-$CHAIN   = "var PAC_PROXY = 'SOCKS5 127.0.0.1:9050; SOCKS5 127.0.0.1:9150; SOCKS5 127.0.0.1:1080; PROXY 127.0.0.1:8080; DIRECT';"
+$CHAIN   = "var PAC_PROXY = 'SOCKS5 127.0.0.1:1080; PROXY 127.0.0.1:8080; SOCKS5 127.0.0.1:9050; SOCKS5 127.0.0.1:9150; DIRECT';"
 $ISReg   = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings'
 
 function Say($s) { Write-Host $s }
@@ -159,13 +168,14 @@ $needPt = @()
 foreach ($b in $bridgeLines) { $needPt += (($b -split '\s+')[0]) }
 $needPt = @($needPt | Select-Object -Unique)
 
-# Кандидаты на транспорт: meek_lite/webtunnel в коробке обслуживает obfs4proxy.exe!
+# Кандидаты на транспорт: meek_lite/webtunnel/obfs4 в коробке обслуживают
+# obfs4proxy.exe (старое имя) и lyrebird.exe (новое имя, TB 13+); snowflake — свой клиент.
 $ptCand = @{
-  'meek_lite' = @('obfs4proxy.exe', 'meek-client.exe')
-  'meek'      = @('meek-client.exe', 'obfs4proxy.exe')
-  'obfs4'     = @('obfs4proxy.exe')
+  'meek_lite' = @('obfs4proxy.exe', 'lyrebird.exe', 'meek-client.exe')
+  'meek'      = @('meek-client.exe', 'lyrebird.exe', 'obfs4proxy.exe')
+  'obfs4'     = @('obfs4proxy.exe', 'lyrebird.exe')
   'snowflake' = @('snowflake-client.exe')
-  'webtunnel' = @('obfs4proxy.exe', 'webtunnel-client.exe')
+  'webtunnel' = @('obfs4proxy.exe', 'lyrebird.exe', 'webtunnel-client.exe')
 }
 $pluginByT = @{}
 # (i) готовые строки из коробки (torrc + torrc-defaults), в т.ч. через запятую
@@ -296,6 +306,11 @@ if ($proc) {
     if ($lastPct -ne $lastShown -and $lastPct -ge 0) { Say ('  прогресс: ' + $lastPct + '%'); $lastShown = $lastPct }
   }
 }
+# не подключился — глушим свой tor, чтобы браузер не вис на мёртвом порту
+if (-not $done -and $proc -and -not $proc.HasExited) {
+  try { Stop-Process -Id $proc.Id -Force -ErrorAction Stop; $listening = $false
+        Say '  скрытый tor остановлен (не подключился) — браузер не будет висеть на мёртвом порту.' } catch {}
+}
 
 # --- [6] PAC: качаю свежий, вшиваю цепочку, включаю системно ---
 Say '[6/7] PAC...'
@@ -361,11 +376,15 @@ if ($done) {
   Say '  Частые причины: антивирус убил tor.exe (добавь Tor Browser в исключения),'
   Say '  либо ошибка в конфиге — она видна в строках выше.'
 } elseif ($lastPct -ge 0) {
-  Say ('TOR ЗАСТРЯЛ НА ' + $lastPct + '% — провайдер режет и эти мосты. Нужны свежие мосты:')
-  Say '  1) Telegram @getbridgesbot -> команда /webtunnel (лучший тип для РФ).'
-  Say '  2) Скопируй строки мостов из ответа бота (каждая строка целиком).'
-  Say ('  3) Вставь их в файл ' + $bridgesTxt + ' (блокнот открою сейчас).')
-  Say '  4) Запусти этот скрипт снова — он переподнимет tor с новыми мостами.'
+  Say ('TOR ЗАСТРЯЛ НА ' + $lastPct + '% — провайдер добил и эти мосты (встроенные в РФ сейчас мертвы). Два пути:')
+  Say '  ПУТЬ 1 (самый быстрый, без мостов) — Psiphon:'
+  Say '    скачай Psiphon 3 для Windows (psiphon3.com), запусти, в настройках ВЫКЛЮЧИ «Режим VPN»'
+  Say '    (нужен режим ПРОКСИ) — он поднимет 127.0.0.1:8080/1080, PAC подхватит его сам.'
+  Say '  ПУТЬ 2 (чинит Tor по-настоящему) — личные мосты webtunnel:'
+  Say '    1) Telegram @getbridgesbot -> команда /webtunnel (их нет в дефолтных списках — цензор не знает, что резать).'
+  Say '    2) Скопируй строки мостов из ответа бота (каждая строка целиком).'
+  Say ('    3) Вставь их в файл ' + $bridgesTxt + ' (блокнот открою сейчас).')
+  Say '    4) Запусти этот скрипт снова — он переподнимет tor с новыми мостами.'
   try { if (-not (Test-Path $bridgesTxt)) { [IO.File]::WriteAllText($bridgesTxt, "# вставь строки мостов ниже, по одной на строке`r`n") } ; Start-Process notepad $bridgesTxt } catch {}
 } elseif ($listening) {
   Say 'TOR ЗАПУЩЕН И СЛУШАЕТ 9050, но к сети не подключился (прогресса в логе нет). Лог:'
@@ -377,6 +396,7 @@ if ($done) {
   Say ('  ' + $errLog + ':')
   SayTail $errLog 10
   Say '  Частая причина: антивирус или брандмауэр не пустил tor.exe — добавь в исключения / РАЗРЕШИТЬ.'
+  Say '  Если процесс так и не жив: ПУТЬ 1 — Psiphon (psiphon3.com, режим прокси), ПУТЬ 2 — мосты webtunnel в bridges.txt.'
 }
 Say ''
 Say 'Проверки в браузере:'
