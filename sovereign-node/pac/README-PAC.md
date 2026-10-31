@@ -97,6 +97,7 @@ python3 build-anticensor-pac.py --proxy ТВОЙ_VPS_IP:3128
 | `sovereign-node/pac/anticensor.pac` | собранный PAC (нейтральный дефолт прокси — неактивен, пока не впишешь свой) |
 | `sovereign-node/pac/build-anticensor-pac.py` | генератор: реестр → фильтр Блума → PAC, с самопроверкой |
 | `sovereign-node/server/enable-pac-endpoint.sh` | серверный аддон: mixed :3128 с паролем на VPS (путь А) |
+| `sovereign-node/chrome-ext/` | браузерная версия PAC: Chrome/Edge, Manifest V3 — «Загрузить распакованное», список встроен |
 
 ## Границы (честно)
 
