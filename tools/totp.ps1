@@ -24,7 +24,21 @@ param(
 $ErrorActionPreference = 'Stop'
 if (-not $Seed -and -not $SeedFile) { $SeedFile = Join-Path $PSScriptRoot 'totp.seed' }
 if ($SeedFile) {
-    if (-not (Test-Path $SeedFile)) { throw "Нет файла сида: $SeedFile" }
+    if (-not (Test-Path $SeedFile)) {
+        Write-Output ""
+        Write-Output "======================================================"
+        Write-Output "  СИДА ЕЩЁ НЕТ: $SeedFile"
+        Write-Output "  ЭТО НЕ ПОЛОМКА — генератору пока нечего считать."
+        Write-Output "  Сид создаёт БАТНИК 2fa-setup.bat на шаге настройки:"
+        Write-Output "    1. Запусти 2fa-setup.bat (НЕ totp.ps1 руками)."
+        Write-Output "    2. В браузере: Enable two-factor authentication ->"
+        Write-Output "       Authenticator app -> ссылка ПОД QR ->"
+        Write-Output "       скопируй строку-ключ."
+        Write-Output "    3. Вставь ключ в окно БАТНИКА и нажми Enter —"
+        Write-Output "       сид появится сам, батник покажет 6 цифр."
+        Write-Output "======================================================"
+        exit 2
+    }
     $Seed = Get-Content -Raw $SeedFile
 }
 $raw = $Seed.ToUpper() -replace '[^A-Z2-7]', ''
