@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="head">
+    <span class="logo">С65</span>
+    <b>Антицензор MV3</b>
+    <span id="state" class="state">…</span>
+  </div>
+
+  <div class="modes">
+    <button data-mode="pac">PAC · список</button>
+    <button data-mode="global">Всё через прокси</button>
+    <button data-mode="direct">Напрямую</button>
+  </div>
+
+  <div class="info">
+    <div class="kv"><span>Прокси</span><b id="proxy">…</b></div>
+    <div class="kv"><span>Блокировка</span><b id="blocking">…</b></div>
+    <div class="kv"><span>Дин. правил</span><b id="dyn">…</b></div>
+    <div class="kv err" id="lastErrRow" hidden><span>Ошибка прокси</span><b id="lastErr">…</b></div>
+  </div>
+
+  <div class="toggles">
+    <label><input type="checkbox" id="blockAds"> Реклама</label>
+    <label><input type="checkbox" id="blockTrackers"> Трекеры</label>
+    <label><input type="checkbox" id="webrtcHideIp"> WebRTC-скрытие IP</label>
+  </div>
+
+  <div class="foot">
+    <button id="btnOptions" class="primary">Настройки</button>
+    <span class="dim">список PAC редактируется в настройках</span>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

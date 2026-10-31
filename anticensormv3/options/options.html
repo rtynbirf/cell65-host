@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Антицензор MV3 — настройки</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">С65</span>
+      <div>
+        <h1>Антицензор MV3</h1>
+        <div class="sub" id="version">Manifest V3</div>
+      </div>
+    </div>
+    <div class="head-actions">
+      <button id="btnExport" class="ghost">Экспорт настроек</button>
+      <button id="btnImport" class="ghost">Импорт настроек</button>
+      <input type="file" id="fileSettings" accept=".json" hidden>
+      <button id="btnReset" class="danger-ghost">Сброс</button>
+    </div>
+  </header>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <main>
+    <!-- 1. Режим -->
+    <section>
+      <h2>1 · Режим прокси</h2>
+      <div class="cards" id="modeCards">
+        <label class="card"><input type="radio" name="mode" value="pac">
+          <div><b>PAC · по списку</b><small>Через прокси идут только домены из списка «Антицензор». Остальное — напрямую.</small></div></label>
+        <label class="card"><input type="radio" name="mode" value="global">
+          <div><b>Всё через прокси</b><small>fixed_servers: весь HTTP/HTTPS-трафик через указанный прокси.</small></div></label>
+        <label class="card"><input type="radio" name="mode" value="direct">
+          <div><b>Напрямую</b><small>Прокси выключен. Блокировка рекламы/трекеров продолжает работать.</small></div></label>
+      </div>
+      <div class="row" id="pacScopeRow">
+        <label for="pacScope" class="lbl">Область PAC:</label>
+        <select id="pacScope">
+          <option value="list">Только домены из списка</option>
+          <option value="all">Всё, кроме исключений</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- 2. Сервер -->
+    <section>
+      <h2>2 · Прокси-сервер</h2>
+      <div class="grid3">
+        <div><span class="lbl">Схема</span>
+          <select id="proxyScheme">
+            <option value="socks5">SOCKS5</option>
+            <option value="http">HTTP</option>
+            <option value="https">HTTPS</option>
+          </select>
+        </div>
+        <div><span class="lbl">Хост</span><input type="text" id="proxyHost" placeholder="127.0.0.1"></div>
+        <div><span class="lbl">Порт</span><input type="number" id="proxyPort" min="1" max="65535"></div>
+      </div>
+      <p class="hint">Типичные порты локальных стеков: Xray/v2rayN — 10808, sing-box — 2080, shadowsocks — 1080. Точное значение берите из вашего конфига.</p>
+      <label class="check"><input type="checkbox" id="proxyAuthEnabled"> Авторизация на прокси (логин/пароль)</label>
+      <div class="grid2" id="authRow">
+        <div><span class="lbl">Логин</span><input type="text" id="proxyUser" autocomplete="off"></div>
+        <div><span class="lbl">Пароль</span><input type="password" id="proxyPass" autocomplete="off"></div>
+      </div>
+    </section>
+
+    <!-- 3. Список Антицензор -->
+    <section>
+      <h2>3 · Список «Антицензор» <span class="count" id="azCount"></span></h2>
+      <p class="hint">По одному домену в строке. Поддерживаются wildcards (<code>*.example.com</code>). Поддомены матчатся автоматически: <code>example.com</code> покрывает и <code>www.example.com</code>.</p>
+      <textarea id="antizensor" rows="8" spellcheck="false" placeholder="twitter.com&#10;x.com&#10;*.example.org"></textarea>
+    </section>
+
+    <!-- 4. Исключения -->
+    <section>
+      <h2>4 · Исключения (всегда напрямую) <span class="count" id="exCount"></span></h2>
+      <textarea id="exceptions" rows="5" spellcheck="false" placeholder="bank.example.ru&#10;*.internal.corp"></textarea>
+    </section>
+
+    <!-- 5. Блокировка -->
+    <section>
+      <h2>5 · Блокировка рекламы и трекеров</h2>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="blockAds"> Рекламные сети (30 доменов, статический набор)</label>
+        <label class="check"><input type="checkbox" id="blockTrackers"> Трекеры и аналитика (28 доменов, статический набор)</label>
+        <label class="check"><input type="checkbox" id="badgeCount"> Счётчик блокировок на иконке</label>
+      </div>
+      <h3>Импорт hosts-файла в динамические правила</h3>
+      <p class="hint">Формат: <code>0.0.0.0 domain</code>, <code>||domain^</code> или просто домен. Лимит DNR: 30 000 динамических правил (Chrome 121+). Комментарии: <code>#</code>, <code>!</code>, <code>//</code>.</p>
+      <div class="importbar">
+        <button id="btnPickHosts" class="ghost">Выбрать файл…</button>
+        <input type="file" id="fileHosts" accept=".txt,.hosts,.json" hidden>
+        <span class="dim">или вставьте текст ниже</span>
+      </div>
+      <textarea id="hostsText" rows="6" spellcheck="false" placeholder="0.0.0.0 ads.example.com"></textarea>
+      <div class="importbar">
+        <button id="btnImportHosts" class="primary">Применить импорт</button>
+        <button id="btnClearImport" class="danger-ghost">Удалить импортированное</button>
+        <span id="importInfo" class="dim"></span>
+      </div>
+    </section>
+
+    <!-- 6. Приватность -->
+    <section>
+      <h2>6 · Приватность</h2>
+      <label class="check"><input type="checkbox" id="webrtcHideIp"> Скрывать локальные IP в WebRTC (<code>default_public_interface_only</code>)</label>
+      <p class="hint warn"><b>Про DNS:</b> Chrome при SOCKS5-прокси резолвит DNS напрямую (утечка имён). Включите «Безопасный DNS» — <code>chrome://settings/security</code> — или используйте HTTP/HTTPS-прокси, где имена уходят внутрь CONNECT-туннеля.</p>
+      <button id="btnOpenDoh" class="ghost">Открыть настройки безопасного DNS</button>
+    </section>
+
+    <!-- 7. Диагностика -->
+    <section>
+      <h2>7 · Диагностика</h2>
+      <div class="diag">
+        <div>Динамических правил импорта: <b id="dynRules">…</b></div>
+        <div>Последние ошибки прокси (<span id="errCount">0</span>):</div>
+        <ul id="errlog" class="errlog"></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span class="dim">Все настройки хранятся локально (chrome.storage.local). Ничего никуда не отправляется.</span>
+    <button id="btnApply" class="primary big">Применить сейчас</button>
+  </footer>
+
+  <script src="options.js" type="module"></script>
+</body>
+</html>
