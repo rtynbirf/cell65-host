@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "requestDomains": [
+        "doubleclick.net",
+        "googlesyndication.com",
+        "googleadservices.com",
+        "2mdn.net",
+        "adnxs.com",
+        "appnexus.com",
+        "adsrvr.org",
+        "rubiconproject.com",
+        "pubmatic.com",
+        "openx.net",
+        "criteo.com",
+        "criteo.net",
+        "taboola.com",
+        "outbrain.com",
+        "amazon-adsystem.com",
+        "moatads.com",
+        "adform.net",
+        "smartadserver.com",
+        "casalemedia.com",
+        "33across.com",
+        "bidswitch.net",
+        "rtbhouse.com",
+        "teads.tv",
+        "yieldlab.net",
+        "improvedigital.com",
+        "sharethrough.com",
+        "yieldmo.com",
+        "media.net",
+        "adroll.com",
+        "sitescout.com"
+      ]
+    }
+  }
+]
