@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "Антицензор MV3",
+    "description": "Название расширения"
+  },
+  "extDesc": {
+    "message": "PAC-роутинг «Антицензор» через локальный прокси + hosts-блокировка рекламы и трекеров (declarativeNetRequest) + чистая новая вкладка. Manifest V3.",
+    "description": "Описание расширения"
+  }
+}

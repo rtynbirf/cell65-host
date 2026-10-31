@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "Anticensor MV3",
+    "description": "Extension name"
+  },
+  "extDesc": {
+    "message": "PAC-based 'Anticensor' routing via local proxy + hosts-style ad/tracker blocking (declarativeNetRequest) + clean new tab. Manifest V3.",
+    "description": "Extension description"
+  }
+}
