@@ -1,4 +1,24 @@
-# cell65-host · «Антицензор» MV3
+# cell65-host
+
+Личный инфраструктурный хост. В репозитории — две независимые линии:
+
+1. **[sovereign-node/](sovereign-node/)** — СУВЕРЕННЫЙ УЗЕЛ: личный anti-censorship
+   комплект «настроил и забыл». Один бинарь sing-box на Windows 11, один VPS,
+   лестница из трёх независимых транспортов (VLESS+Reality / VLESS+WS за Cloudflare
+   CDN / Hysteria2) с авторотацией, развязка RU/не-RU. Архитектура, модель угроз
+   и быстрый старт — в [sovereign-node/README.md](sovereign-node/README.md).
+2. **[anticensormv3/](anticensormv3/)** — расширение Chrome **Manifest V3** «Антицензор»
+   (v1.1.0): PAC-роутинг через локальный прокси, hosts-блокировка рекламы/трекеров
+   (declarativeNetRequest), чистая новая вкладка, WebRTC-защита. Полная документация —
+   ниже и в [docs/SOURCES.md](docs/SOURCES.md).
+
+- **codespace-bootstrap.sh** — инициализация GitHub Codespace (локальный
+  gost-прокси для самопроверок сети).
+- Лицензия — [LICENSE](LICENSE) (MIT). Сообщения об уязвимостях — [SECURITY.md](SECURITY.md).
+
+---
+
+# «Антицензор» MV3 — документация
 
 Готовый, настроенный Chrome-плагин **Manifest V3** + самодостаточный PAC-скрипт:
 
@@ -131,4 +151,4 @@ cell65-host/
 
 ## 10. Синхронизация со стоящей задачей «храним в репе»
 
-Рабочая копия — `git`-репозиторий с историей коммитов. Push выполняется командой из `INSTRUCTIONS_PUSH.md` (лежит рядом с zip-бэкапами) после передачи рабочего токена. Бэкапы: `git bundle` + zip снимка дерева + zip папки расширения.
+Рабочая копия — `git`-репозиторий с историей коммитов. Push выполняется рабочим токеном (файл `/tmp/.ghtoken`, креды не попадают в URL). Бэкапы: `git bundle` + zip снимка дерева + zip папки расширения — в `download/`.
