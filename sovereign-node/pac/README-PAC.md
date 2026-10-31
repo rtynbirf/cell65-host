@@ -30,8 +30,10 @@ Windows спрашивает при каждом заходе: «этот сай
    `python3 build-anticensor-pac.py --proxy ТВОЙ_VPS_IP:3128`
    — скачает свежий реестр, соберёт фильтр, проверит пропуски и напечатает статистику.
 3. **Выложи** полученный `anticensor.pac` в репу: `sovereign-node/pac/anticensor.pac`.
-   После включения GitHub Pages он будет доступен по адресу
-   `https://rtynbirf.github.io/cell65-host/sovereign-node/pac/anticensor.pac`.
+   Без всякого Pages файл уже доступен по raw-адресу (именно его вставляй в настройки):
+   `https://raw.githubusercontent.com/rtynbirf/cell65-host/main/sovereign-node/pac/anticensor.pac`
+   Опционально включи GitHub Pages (Settings → Pages → main → Save) — тогда тот же
+   файл откроется и по `https://rtynbirf.github.io/cell65-host/sovereign-node/pac/anticensor.pac`.
 4. **Включи PAC на устройстве** (см. ниже) и проверь.
 
 Ленивый вариант шага 2 без Python: открыть `anticensor.pac` в веб-редакторе GitHub
