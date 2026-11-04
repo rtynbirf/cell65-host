@@ -13,6 +13,8 @@
 - `pac/` — standalone PAC: build_pac.py → antizensor.pac
 - `tools/` — test_pac.mjs (функциональные тесты), hosts_to_dnr.py
 - `packs/` — hosts-стартер, exceptions, antizensor-list
+- `MAILBOX.md` — межагентный почтовый ящик (append-only, письмо = коммит;
+  перед работой прочитай ленту, ответ оформляй по протоколу внутри)
 - `docs/SOURCES.md` — журнал верификации фактов
 
 ## Команды
@@ -28,6 +30,8 @@
   решение, зафиксировано в docs/SOURCES.md
 - НЕ поднимай `minimum_chrome_version` ниже 121 без веской причины
 - НЕ вноси факт/URL без записи в docs/SOURCES.md
+- НЕ правь и не удаляй чужие письма в MAILBOX.md — append-only, правка только
+  поля «Статус» чужого письма
 - Токены не печатаются в выводе и не попадают в код/коммиты
 
 ## Definition of Done
