@@ -10,9 +10,18 @@
 # ============================================================
 set -euo pipefail
 
-# Pinned sing-box version (per AUDIT_CELL65_LLM.md C5)
-# Upgrade: change version + run selftest.yml
-SINGBOX_VERSION="${SINGBOX_VERSION:-v1.10.0}"
+# --- Закреплённая версия sing-box (аудит supply-chain, WP-F) ---
+# Почему закрепляем, а не берём «последний релиз»: динамический выбор версии
+# невоспроизводим (два запуска в разные дни ставят разные бинари) и превращает
+# «curl | bash» в открытую дверь для подмены релиза на стороне апстрима.
+# Поэтому версия зафиксирована, а её SHA-256 вшит ниже и проверяется ДО
+# распаковки. Обновление — осознанное действие: поменять версию + дайджесты.
+# checksums.txt релизы sing-box НЕ публикуют (проверено на v1.10.0..v1.14.4),
+# поэтому для закреплённой версии дайджесты вшиты сюда.
+SING_BOX_PINNED="1.14.4"
+# SHA-256 официальных тарболлов релиза v1.14.4 (SagerNet/sing-box, linux):
+SB_SHA256_amd64="699a1b510aa4396b2176d32d1181920399ebf1e267835da6f3b598d0f7c24968"
+SB_SHA256_arm64="436441f76ee2f7fe21b5b2d426d3cb261a480455a704865789ad533e4273ec26"
 
 [ "$(id -u)" -eq 0 ] || { echo "ЗАПУСКАЙ ЧЕРЕЗ sudo"; exit 1; }
 
@@ -42,19 +51,59 @@ case "$(uname -m)" in
 esac
 
 echo "==> 2/7 Версия sing-box"
-VER=""
-VER=$(curl -fsSL --max-time 20 "https://github.com/SagerNet/sing-box/releases.atom" 2>/dev/null | grep -oP '(?<=tag/releases/v)[^<]+' | head -1 || true)
-if [ -z "$VER" ]; then
-  VER=$(curl -fsSL --max-time 20 "https://api.github.com/repos/SagerNet/sing-box/releases/latest" 2>/dev/null | grep -oP '"tag_name":\s*"v\K[^"]+' || true)
+# Приоритет: env SING_BOX_VER (или старый SINGBOX_VERSION) > закреплённая версия.
+# Чужую версию можно задать, но проверка целостности всё равно обязательна
+# (см. шаг 3/7): либо checksums.txt этого релиза, либо явный ALLOW_UNPINNED=1.
+SB_VER="${SING_BOX_VER:-${SINGBOX_VERSION:-$SING_BOX_PINNED}}"
+SB_VER="${SB_VER#v}"
+if [ "$SB_VER" = "$SING_BOX_PINNED" ]; then
+  echo "    v$SB_VER (закреплённая версия, SHA-256 вшит в скрипт)"
+else
+  echo "    v$SB_VER (переопределено вручную — потребуется checksums.txt или ALLOW_UNPINNED=1)"
 fi
-[ -n "$VER" ] || { echo "Не смог узнать версию (нет сети до GitHub?)"; exit 1; }
-echo "    v$VER"
 
-echo "==> 3/7 Загрузка и установка бинаря"
+echo "==> 3/7 Загрузка и установка бинаря (с проверкой SHA-256)"
+SB_TGZ="sing-box-${SB_VER}-linux-${GOARCH}.tar.gz"
 mkdir -p /tmp/sbx && cd /tmp/sbx
-curl -fsSL --retry 3 -o sb.tgz "https://github.com/SagerNet/sing-box/releases/download/v${VER}/sing-box-${VER}-linux-${GOARCH}.tar.gz"
+curl -fsSL --retry 3 -o sb.tgz "https://github.com/SagerNet/sing-box/releases/download/v${SB_VER}/${SB_TGZ}"
+
+# Проверка целостности ДО распаковки — fail closed: не совпало/нечем проверить —
+# ничего не ставим.
+SB_EXPECT=""
+if [ "$SB_VER" = "$SING_BOX_PINNED" ]; then
+  case "$GOARCH" in
+    amd64) SB_EXPECT="$SB_SHA256_amd64" ;;
+    arm64) SB_EXPECT="$SB_SHA256_arm64" ;;
+  esac
+else
+  # Чужая версия: тянем checksums.txt из ТОГО ЖЕ релиза.
+  if curl -fsSL --retry 2 -o checksums.txt \
+       "https://github.com/SagerNet/sing-box/releases/download/v${SB_VER}/checksums.txt"; then
+    SB_EXPECT=$(grep -E "^[0-9a-fA-F]{64}[[:space:]]+\*?${SB_TGZ}$" checksums.txt | head -1 | cut -d' ' -f1 || true)
+    [ -n "$SB_EXPECT" ] || { echo "ОШИБКА: в checksums.txt релиза v${SB_VER} нет строки для ${SB_TGZ}"; exit 1; }
+  fi
+fi
+
+if [ -n "$SB_EXPECT" ]; then
+  if echo "$SB_EXPECT  sb.tgz" | sha256sum -c - >/dev/null 2>&1; then
+    echo "    SHA-256 OK: ${SB_EXPECT}"
+  else
+    echo "ОШИБКА: SHA-256 НЕ СОВПАЛ для v${SB_VER} linux-${GOARCH}." >&2
+    echo "  Тарболл повреждён или подменён — установка прервана. Никакой бинарь не ставился." >&2
+    exit 1
+  fi
+elif [ "${ALLOW_UNPINNED:-0}" = "1" ]; then
+  echo "ВНИМАНИЕ: ALLOW_UNPINNED=1 — ставим v${SB_VER} БЕЗ проверки SHA-256 (checksums.txt у релиза нет)." >&2
+  echo "  Это осознанный обход защиты: бинарь ставится на свой страх и риск." >&2
+else
+  echo "ОШИБКА: для v${SB_VER} нет ни вшитого дайджеста, ни checksums.txt в релизе." >&2
+  echo "  Варианты: сними SING_BOX_VER (вернёшься к закреплённой версии)," >&2
+  echo "  или явно разреши установку без проверки: ALLOW_UNPINNED=1 bash install-server.sh." >&2
+  exit 1
+fi
+
 tar -xzf sb.tgz
-install -m 0755 "sing-box-${VER}-linux-${GOARCH}/sing-box" /usr/local/bin/sing-box
+install -m 0755 "sing-box-${SB_VER}-linux-${GOARCH}/sing-box" /usr/local/bin/sing-box
 cd /; rm -rf /tmp/sbx
 /usr/local/bin/sing-box version | head -1
 
