@@ -6,6 +6,7 @@
 #    T1 VLESS+Reality :443/tcp   (маска SNI_MASK)
 #    T2 VLESS+WS     :8443/tcp  (готов к приёму через Cloudflare CDN)
 #    T3 Hysteria2     :443/udp   (QUIC, obfs salamander)
+#    T4 AnyTLS       :2053/tcp  (чистый TLS 1.3 + паддинг против TLS-in-TLS)
 #  Идемпотентно: повторный запуск просто обновляет конфиг и рестартует сервис.
 # ============================================================
 set -euo pipefail
@@ -27,8 +28,21 @@ fi
 
 SNI="${SNI_MASK:-www.microsoft.com}"
 T2PATH="${T2_PATH:-/xh}"
-RP="${REALITY_PORT:-443}"; XP="${T2_PORT:-8443}"; HP="${HY2_PORT:-443}"
+RP="${REALITY_PORT:-443}"; XP="${T2_PORT:-8443}"; HP="${HY2_PORT:-443}"; T4P="${T4_PORT:-2053}"
 CN_DOMAIN="${DOMAIN:-$SNI}"
+
+# T4 AnyTLS: пароль обязателен; пусто = генерируем и дописываем в server.env
+AP="${ANYTLS_PASSWORD:-}"
+if [ -z "$AP" ]; then
+  AP=$(openssl rand -base64 18 | tr -d '/+=' || true)
+  echo "==> ANYTLS_PASSWORD не задан — сгенерирован: $AP"
+  if [ -f "$DIR/server.env" ]; then
+    grep -q '^ANYTLS_PASSWORD=' "$DIR/server.env" 2>/dev/null || echo "ANYTLS_PASSWORD=${AP}" >> "$DIR/server.env"
+    echo "    дописан в server.env — СКОПИРУЙ ЕГО в node.env клиента (иначе T4 не поднимется)."
+  else
+    echo "    (server.env рядом отсутствует — пароль только в этом выводе)"
+  fi
+fi
 
 echo "==> 1/7 Архитектура"
 case "$(uname -m)" in
@@ -115,6 +129,19 @@ cat > /etc/sovereign-node/config.json <<EOF
         "key_path": "/etc/sovereign-node/key.pem"
       },
       "masquerade": "https://${SNI}/"
+    },
+    {
+      "type": "anytls",
+      "tag": "anytls-t4",
+      "listen": "::",
+      "listen_port": ${T4P},
+      "users": [ { "name": "sovereign", "password": "${AP}" } ],
+      "tls": {
+        "enabled": true,
+        "server_name": "${SNI}",
+        "certificate_path": "/etc/sovereign-node/cert.pem",
+        "key_path": "/etc/sovereign-node/key.pem"
+      }
     }
   ],
   "outbounds": [ { "type": "direct", "tag": "direct" } ]
@@ -132,7 +159,7 @@ sysctl --system >/dev/null 2>&1 || true
 
 cat > /etc/systemd/system/sovereign-node.service <<EOF
 [Unit]
-Description=Sovereign Node (sing-box: Reality + WS/CDN + Hysteria2)
+Description=Sovereign Node (sing-box: Reality + WS/CDN + Hysteria2 + AnyTLS)
 After=network-online.target
 Wants=network-online.target
 
@@ -155,6 +182,7 @@ if command -v ufw >/dev/null 2>&1; then
   ufw allow "${RP}/tcp" >/dev/null 2>&1 || true
   ufw allow "${XP}/tcp" >/dev/null 2>&1 || true
   ufw allow "${HP}/udp" >/dev/null 2>&1 || true
+  ufw allow "${T4P}/tcp" >/dev/null 2>&1 || true
 fi
 
 systemctl daemon-reload
@@ -169,7 +197,8 @@ echo "================= ГОТОВО. КАРТА УЗЛА ================="
 echo "T1 Reality : ${RP}/tcp   SNI-маска ${SNI}   short_id ${SID}"
 echo "T2 WS      : ${XP}/tcp   путь ${T2PATH}   ждёт домен: ${CN_DOMAIN}"
 echo "T3 Hysteria2: ${HP}/udp  obfs включён"
-echo "Порты держать открытыми: ${RP}/tcp, ${XP}/tcp, ${HP}/udp"
+echo "T4 AnyTLS  : ${T4P}/tcp   пароль в server.env/node.env"
+echo "Порты держать открытыми: ${RP}/tcp, ${XP}/tcp, ${HP}/udp, ${T4P}/tcp"
 if [ -z "${DOMAIN}" ]; then
   echo "DOMAIN пуст: T2 пока не активен на клиенте — это нормально."
   echo "Когда появится домен: впиши его в server.env, перезапусти этот скрипт,"

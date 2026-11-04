@@ -6,10 +6,11 @@
 #  Что делает (идемпотентно, можно запускать повторно):
 #    1. Читает node.env (единственный файл правды)
 #    2. Ставит sing-box (один бинарь) в C:\Program Files\sovereign-node
-#    3. Рендерит конфиг: лестница T1 Reality / T2 WS через Cloudflare / T3 Hysteria2
+#    3. Рендерит конфиг: лестница T1 Reality / T2 WS через Cloudflare / T3 Hysteria2 / T4 AnyTLS
 #       + раздельная маршрутизация (RU напрямую, всё остальное через лестницу)
 #    4. Регистрирует службу Windows с автоперезапуском и стартует её (TUN-режим)
 #  Если DOMAIN пуст — T2 не включается (включится после provision-edge.ps1).
+#  Если ANYTLS_PASSWORD пуст — T4 не включается (скопируй пароль из server.env).
 # ============================================================
 #Requires -RunAsAdministrator
 param([switch]$RenderOnly)
@@ -35,7 +36,9 @@ if (-not $V["VPS_IP"]) {
   exit 1
 }
 $withT2 = [bool]$V["DOMAIN"]
-Write-Host ("Узел: VPS={0}  домен={1}" -f $V["VPS_IP"], $(if($withT2){$V["DOMAIN"]}else{"(нет — T2 пропущен)"}))
+$withT4 = [bool]$V["ANYTLS_PASSWORD"]
+Write-Host ("Узел: VPS={0}  домен={1}  T4-AnyTLS={2}" -f $V["VPS_IP"], $(if($withT2){$V["DOMAIN"]}else{"(нет — T2 пропущен)"}), $(if($withT4){"вкл"}else{"НЕТ — скопируй ANYTLS_PASSWORD из server.env в node.env"}))
+if (-not $withT4) { Write-Host "T4 пропущен: в node.env нет ANYTLS_PASSWORD." -ForegroundColor DarkGray }
 
 # ---------- 2. sing-box ----------
 New-Item -ItemType Directory -Force -Path $Bin, $Data | Out-Null
@@ -82,6 +85,7 @@ $T2BLOCK = @'
 '@
 
 if ($withT2) { $ladder = @("T1-REALITY","T2-CF-WS","T3-HY2") } else { $ladder = @("T1-REALITY","T3-HY2") }
+if ($withT4) { $ladder = @($ladder) + "T4-ANYTLS" }
 $ladderJson = ($ladder | ForEach-Object { "`"$_`"" }) -join ","
 
 $cfg = @"
@@ -145,6 +149,7 @@ __T2_OR_EMPTY__
       "obfs": { "type": "salamander", "password": "__OBFS__" },
       "tls": { "enabled": true, "insecure": true, "server_name": "__SNI__" }
     },
+__T4_OR_EMPTY__
     { "type": "direct", "tag": "DIRECT" }
   ],
   "route": {
@@ -170,8 +175,21 @@ __T2_OR_EMPTY__
 }
 "@
 
+$T4BLOCK = @'
+    {
+      "type": "anytls",
+      "tag": "T4-ANYTLS",
+      "server": "__VPS_IP__",
+      "server_port": __T4P__,
+      "password": "__APW__",
+      "tls": { "enabled": true, "insecure": true, "server_name": "__SNI__" }
+    },
+'@
+
 if ($withT2) { $cfg = $cfg.Replace("__T2_OR_EMPTY__", $T2BLOCK) }
 else { $cfg = $cfg.Replace("__T2_OR_EMPTY__", "") }
+if ($withT4) { $cfg = $cfg.Replace("__T4_OR_EMPTY__", $T4BLOCK) }
+else { $cfg = $cfg.Replace("__T4_OR_EMPTY__", "") }
 
 $R = @{
     "__VPS_IP__" = $V["VPS_IP"];             "__DOMAIN__" = $V["DOMAIN"]
@@ -180,6 +198,7 @@ $R = @{
     "__OBFS__"   = $V["HY2_OBFS"];           "__SNI__"    = $V["SNI_MASK"]
     "__T2PATH__" = $V["T2_PATH"];            "__RP__"     = $V["REALITY_PORT"]
     "__XP__"     = $V["T2_PORT"];            "__HP__"     = $V["HY2_PORT"]
+    "__APW__"    = $V["ANYTLS_PASSWORD"];    "__T4P__"    = $V["T4_PORT"]
 }
 foreach ($k in $R.Keys) { $cfg = $cfg.Replace($k, [string]$R[$k]) }
 
@@ -204,7 +223,7 @@ if ($svcExists) {
   Start-Sleep 2
 }
 New-Service -Name $Svc -BinaryPathName $binPath -DisplayName "Sovereign Node (sing-box ladder)" -StartupType Automatic | Out-Null
-sc.exe description $Svc "Sovereign Node: sing-box ladder (Reality/WS-CDN/Hysteria2), TUN, RU-direct" | Out-Null
+sc.exe description $Svc "Sovereign Node: sing-box ladder (Reality/WS-CDN/Hysteria2/AnyTLS), TUN, RU-direct" | Out-Null
 sc.exe failure $Svc reset= 86400 actions= restart/5000/restart/30000/restart/60000 | Out-Null
 Start-Service $Svc
 Start-Sleep 4

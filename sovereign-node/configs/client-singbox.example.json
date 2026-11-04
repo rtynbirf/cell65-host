@@ -34,7 +34,7 @@
     {
       "type": "urltest",
       "tag": "LADDER",
-      "outbounds": ["T1-REALITY", "T2-CF-WS", "T3-HY2"],
+      "outbounds": ["T1-REALITY", "T2-CF-WS", "T3-HY2", "T4-ANYTLS"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
       "tolerance": 50
@@ -73,6 +73,14 @@
       "server_port": 443,
       "password": "REPLACE_WITH_HY2_PASSWORD",
       "obfs": { "type": "salamander", "password": "REPLACE_WITH_HY2_OBFS" },
+      "tls": { "enabled": true, "insecure": true, "server_name": "www.microsoft.com" }
+    },
+    {
+      "type": "anytls",
+      "tag": "T4-ANYTLS",
+      "server": "REPLACE_WITH_VPS_IP",
+      "server_port": 2053,
+      "password": "REPLACE_WITH_ANYTLS_PASSWORD",
       "tls": { "enabled": true, "insecure": true, "server_name": "www.microsoft.com" }
     },
     { "type": "direct", "tag": "DIRECT" }

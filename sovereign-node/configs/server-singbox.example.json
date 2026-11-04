@@ -51,6 +51,19 @@
         "key_path": "/etc/sovereign-node/key.pem"
       },
       "masquerade": "https://www.microsoft.com/"
+    },
+    {
+      "type": "anytls",
+      "tag": "anytls-t4",
+      "listen": "::",
+      "listen_port": 2053,
+      "users": [ { "name": "sovereign", "password": "REPLACE_WITH_ANYTLS_PASSWORD" } ],
+      "tls": {
+        "enabled": true,
+        "server_name": "www.microsoft.com",
+        "certificate_path": "/etc/sovereign-node/cert.pem",
+        "key_path": "/etc/sovereign-node/key.pem"
+      }
     }
   ],
 
