@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Новая вкладка</title>
+  <link rel="stylesheet" href="newtab.css">
+</head>
+<body>
+  <main>
+    <div class="clock-wrap">
+      <div id="clock">--:--</div>
+      <div id="date">&nbsp;</div>
+    </div>
+
+    <form id="searchForm" class="search" autocomplete="off">
+      <select id="engine" title="Поисковая система">
+        <option value="ddg">DuckDuckGo</option>
+        <option value="google">Google</option>
+        <option value="yandex">Яндекс</option>
+        <option value="bing">Bing</option>
+      </select>
+      <input type="text" id="q" placeholder="Поиск в интернете…" autofocus>
+      <button type="submit">Найти</button>
+    </form>
+
+    <div id="links" class="links"></div>
+
+    <div class="addrow">
+      <input type="text" id="linkTitle" placeholder="Название">
+      <input type="text" id="linkUrl" placeholder="example.com">
+      <button id="btnAdd">+ Добавить</button>
+    </div>
+  </main>
+
+  <footer>
+    <span class="dim">Антицензор MV3 · новая вкладка · без телеметрии</span>
+    <span class="foot-btns">
+      <button id="btnOptions">Настройки Антицензора</button>
+      <button id="btnExt">chrome://extensions</button>
+    </span>
+  </footer>
+
+  <script src="newtab.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pac-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Окружение
+        run: node --version && python3 --version
+      - name: Функциональные тесты PAC-движка (28/28 = зелёный)
+        run: node tools/test_pac.mjs
+      - name: JSON-целостность manifest + правил
+        run: |
+          python3 -m json.tool anticensormv3/manifest.json > /dev/null && echo "manifest.json OK"
+          python3 -m json.tool anticensormv3/rules/ads.json > /dev/null && echo "ads.json OK"
+          python3 -m json.tool anticensormv3/rules/trackers.json > /dev/null && echo "trackers.json OK"

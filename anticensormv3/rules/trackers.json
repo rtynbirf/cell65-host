@@ -1,0 +1,39 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "requestDomains": [
+        "google-analytics.com",
+        "googletagmanager.com",
+        "googletagservices.com",
+        "scorecardresearch.com",
+        "quantserve.com",
+        "quantcount.com",
+        "clarity.ms",
+        "bat.bing.com",
+        "hotjar.com",
+        "fullstory.com",
+        "mouseflow.com",
+        "mixpanel.com",
+        "segment.com",
+        "segment.io",
+        "amplitude.com",
+        "chartbeat.com",
+        "parsely.com",
+        "branch.io",
+        "appsflyer.com",
+        "adjust.com",
+        "kochava.com",
+        "nr-data.net",
+        "newrelic.com",
+        "analytics.tiktok.com",
+        "static.ads-twitter.com",
+        "px.ads.linkedin.com",
+        "connect.facebook.net",
+        "tr.snapchat.com"
+      ]
+    }
+  }
+]

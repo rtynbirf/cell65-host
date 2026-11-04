@@ -7,3 +7,11 @@ keys.txt
 # Рабочие конфиги рендерятся установщиками, в репо не попадают
 config.json
 singbox.log
+
+# Служебные файлы ОС и Python
+.DS_Store
+Thumbs.db
+*.pyc
+__pycache__/
+
+totp.seed

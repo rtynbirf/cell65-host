@@ -37,7 +37,7 @@
       "outbounds": ["T1-REALITY", "T2-CF-WS", "T3-HY2", "T4-ANYTLS"],
       "url": "https://www.gstatic.com/generate_204",
       "interval": "3m",
-      "tolerance": 50
+      "tolerance": 150
     },
     {
       "type": "vless",
