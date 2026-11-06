@@ -12,7 +12,8 @@ jobs:
   pac-engine:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7- name: Окружение
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Окружение
         run: node --version && python3 --version
       - name: Функциональные тесты PAC-движка (28/28 = зелёный)
         run: node tools/test_pac.mjs
