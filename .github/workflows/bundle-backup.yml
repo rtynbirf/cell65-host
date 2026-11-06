@@ -11,15 +11,13 @@ jobs:
   bundle:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-        with:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7with:
           fetch-depth: 0
       - name: git bundle --all
         run: git bundle create backup.bundle --all
       - name: Проверка целостности bundle
         run: git bundle verify backup.bundle
-      - uses: actions/upload-artifact@v7
-        with:
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7with:
           name: git-bundle-cell65-host-${{ github.run_id }}
           path: backup.bundle
           retention-days: 90

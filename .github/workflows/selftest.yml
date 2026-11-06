@@ -10,9 +10,7 @@ jobs:
     name: "Сервер: полная установка (Ubuntu 24.04)"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Фиктивные ключи и server.env
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7- name: Фиктивные ключи и server.env
         run: |
           VER=""
           for i in 1 2 3 4; do
@@ -81,9 +79,7 @@ jobs:
     name: "Клиент: рендер и проверка конфига (Windows)"
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Установка sing-box
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7- name: Установка sing-box
         shell: pwsh
         run: |
           $rel = $null
