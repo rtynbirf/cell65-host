@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>CELL-65 Поле 8x8</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<header>
+  <div class="brand"><span class="b65">65</span> CELL-65 Поле 8x8</div>
+  <div class="sub">зеркало скрипта: полуавтомат (настройка+диагностика) -> автомат</div>
+</header>
+
+<div id="status" class="status">чтение...</div>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="semi">ПОЛУАВТОМАТ</button>
+  <button class="tab" data-tab="auto">АВТОМАТ</button>
+  <button class="tab" data-tab="srv">СЕРВЕРЫ</button>
+</nav>
+
+<!-- ======== ПОЛУАВТОМАТ: доска 8x8 кликами, ряд a..h, журнал ======== -->
+<section id="tab-semi" class="pane">
+  <div class="rows-grid" id="rowsGrid"></div>
+  <div class="board-wrap">
+    <div class="board-head"><span class="rowlbl"></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+    <div id="board" class="board"></div>
+    <div class="legend">. не запускалась &middot; o ок &middot; x сбой &middot; > идёт &middot; клик по клетке = запустить (a1..h8)</div>
+  </div>
+  <div class="log-wrap">
+    <div class="log-title">ЖУРНАЛ (факты, хвост)</div>
+    <div id="log" class="log"></div>
+  </div>
+</section>
+
+<!-- ======== АВТОМАТ: авто-цикл + сторож ======== -->
+<section id="tab-auto" class="pane" hidden>
+  <button id="btnAutoCycle" class="btn cyan big">АВТО-ЦИКЛ (списки c -> проба d -> выбор)</button>
+  <label class="chk"><input type="checkbox" id="chkApply"> применять выбор сразу (клетка g2)</label>
+  <button id="btnWatch" class="btn wide">СТОРОЖ: ...</button>
+  <div class="note">сторож = проверка здоровья каждые 30 мин; при сбое сам включает следующий сервер по кольцу СПБ (работает, пока запущен Chrome)</div>
+  <div class="row-btns">
+    <button id="btnReport" class="btn ghost">ОТЧЁТ (h6)</button>
+    <button id="btnUndo" class="btn ghost">UNDO (h2)</button>
+  </div>
+  <div class="log-wrap">
+    <div class="log-title">ЖУРНАЛ (факты, хвост)</div>
+    <div id="log2" class="log"></div>
+  </div>
+</section>
+
+<!-- ======== СЕРВЕРЫ: ручное переключение ======== -->
+<section id="tab-srv" class="pane" hidden>
+  <div id="srvmeta" class="srvmeta"></div>
+  <div id="srvlist" class="list"></div>
+  <div class="row-btns">
+    <button id="btnDirect" class="btn ghost">DIRECT (выкл)</button>
+    <button id="btnOpts" class="btn ghost">Импорт файла</button>
+  </div>
+  <footer>
+    <div>клик по строке = включить сервер (только Chrome, система не трогается)</div>
+    <div class="hint">порядок: вне РФ -> кольцо от СПБ (59.9386,30.3141) -> скорость; Импорт принимает data\servers_export.json из скрипта</div>
+  </footer>
+</section>
+
+<script src="cells.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

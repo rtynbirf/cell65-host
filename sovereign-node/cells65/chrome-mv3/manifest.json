@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "CELL-65 Поле 8x8",
+  "version": "2.5.0",
+  "description": "Зеркало скрипта CELL-65 в Chrome: полуавтомат (доска 8x8 - настройка и диагностика по клеткам a1..h8) и автомат (авто-цикл + сторож). Радиус СПБ, вне РФ, ручное переключение серверов.",
+  "permissions": [
+    "proxy",
+    "storage",
+    "alarms",
+    "webRequest",
+    "webRequestAuthProvider"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "minimum_chrome_version": "108",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "CELL-65 Поле 8x8 (радиус СПБ, вне РФ)",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
