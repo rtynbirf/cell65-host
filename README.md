@@ -1,5 +1,8 @@
 # cell65-host
 
+<p align="center"><img src=".github/social-preview.png" alt="cell65-host" width="100%"></p>
+
+
 Личный инфраструктурный хост. В репозитории — три независимые линии:
 
 1. **[sovereign-node/](sovereign-node/)** — СУВЕРЕННЫЙ УЗЕЛ: личный anti-censorship
