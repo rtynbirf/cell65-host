@@ -19,3 +19,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" --generate-notes --title "Релиз $GITHUB_REF_NAME" "anticensormv3-${GITHUB_REF_NAME}.zip"
+
+  heartbeat:
+    name: Зелёный пульс (диспатч без тега — штатное ожидание релиза)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Пульс
+        run: echo "release ждёт настоящий тег v* — graceful-skip; ожидание = зелёный пульс"
