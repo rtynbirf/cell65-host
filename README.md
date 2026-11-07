@@ -1,6 +1,6 @@
 # cell65-host
 
-Личный инфраструктурный хост. В репозитории — две независимые линии:
+Личный инфраструктурный хост. В репозитории — три независимые линии:
 
 1. **[sovereign-node/](sovereign-node/)** — СУВЕРЕННЫЙ УЗЕЛ: личный anti-censorship
    комплект «настроил и забыл». Один бинарь sing-box на Windows 11, один VPS,
@@ -11,9 +11,11 @@
    (v1.1.0): PAC-роутинг через локальный прокси, hosts-блокировка рекламы/трекеров
    (declarativeNetRequest), чистая новая вкладка, WebRTC-защита. Полная документация —
    ниже и в [docs/SOURCES.md](docs/SOURCES.md).
-
-- **codespace-bootstrap.sh** — инициализация GitHub Codespace (локальный
-  gost-прокси для самопроверок сети).
+3. **[sovereign-node/codespace/](sovereign-node/codespace/)** — CODESPACE-УЗЕЛ:
+   бесплатная личная прокси-машина на GitHub Codespaces (2 ядра/8 ГБ,
+   120 core-часов/мес = 60 ч, без карты и телефона): gost внутри +
+   SSH-туннель gh CLI + супервизор `65-codespace.ps1` со сторожем.
+   Быстрый старт — [sovereign-node/codespace/README.md](sovereign-node/codespace/README.md).
 - Лицензия — [LICENSE](LICENSE) (MIT). Сообщения об уязвимостях — [SECURITY.md](SECURITY.md).
 
 ---
@@ -139,6 +141,8 @@ cell65-host/
 │   ├── lib/dnr-manager.js    # стат. наборы + импорт hosts → dynamic rules
 │   ├── rules/{ads,trackers}.json
 │   ├── options/ popup/ newtab/ icons/ _locales/{ru,en}/
+├── sovereign-node/           # серверная линия: sing-box VPS + codespace-узел
+│   └── codespace/            # бесплатный узел: gost + супервизор + батники
 ├── pac/build_pac.py          # сборщик standalone PAC
 ├── pac/antizensor.pac        # готовый PAC (дефолт: socks5 127.0.0.1:1080, list)
 ├── packs/antizensor-list.txt # список для PAC (заполняйте под себя)
