@@ -202,7 +202,7 @@ function Get-GeoFact {
   try { return (Get-Content $f -Raw -Encoding UTF8 | ConvertFrom-Json) } catch { return $null }
 }
 
-# --- радиус СПБ: дистанция и кольца (чистая математика, гаверсинус) ---
+# --- классы дальности: дистанция и кольцо (чистая математика, гаверсинус) ---
 function Get-DistanceKm {
   param([double]$Lat1, [double]$Lon1, [double]$Lat2, [double]$Lon2)
   $r = 6371.0
@@ -215,13 +215,21 @@ function Get-DistanceKm {
   return [Math]::Round($r * $c, 1)
 }
 
-function Get-SpbRing {
+# v12: универсальный критерий - класс дальности от ДОМА (Get-HomePoint), точка отсчёта
+# любая (дом авто/home.tsv/флаги). Имя-легенда «СПБ» ушло из критерия, обёртка
+# Get-SpbRing оставлена для совместимости старых вызовов (d5, e7).
+function Get-DistanceClass {
   param([double]$DistKm)
   if ($DistKm -le 500) { return 1 }
   if ($DistKm -le 1500) { return 2 }
   if ($DistKm -le 3000) { return 3 }
   if ($DistKm -le 6000) { return 4 }
   return 5
+}
+
+function Get-SpbRing {
+  param([double]$DistKm)
+  return (Get-DistanceClass -DistKm $DistKm)
 }
 
 # --- гео пачкой (ip-api /batch, до 100 IP за запрос, POST) ---
@@ -367,6 +375,70 @@ function Age-Scores {
     if ($v -ge 3.0) { $lines += ($k.Replace('|','#') + '|' + $v) }
   }
   $lines | Set-Content $f -Encoding UTF8
+}
+
+# --- v12: память пробы (леджер с старением): ключи + метка времени, ключ может содержать '|' ---
+# Правило то же, что у cooldown.tsv (v10): дата - всегда ПОСЛЕДНЕЕ поле.
+function Add-AgeLedger {
+  param([string]$Name, [string[]]$Keys, [int]$TtlHours = 24)
+  Ensure-Dirs
+  $f = Join-Path (Get-DataDir) ($Name + '.tsv')
+  $now = Get-Date
+  $rows = @()
+  foreach ($l in @(Get-Content $f -ErrorAction SilentlyContinue)) {
+    $q = $l -split '\|'
+    if ($q.Count -lt 2) { continue }
+    $dt = New-Object DateTime 2000,1,1
+    if ([DateTime]::TryParse($q[$q.Count - 1], [ref]$dt) -and (($now - $dt).TotalHours -lt $TtlHours)) { $rows += $l }
+  }
+  $have = @{}
+  foreach ($r in $rows) { $q2 = $r -split '\|'; $have[($q2[0..($q2.Count - 2)] -join '|')] = 1 }
+  $stamp = $now.ToString('yyyy-MM-dd HH:mm:ss')
+  foreach ($k in @($Keys)) {
+    if ($k -ne '' -and -not $have.ContainsKey($k)) { $rows += ($k + '|' + $stamp); $have[$k] = 1 }
+  }
+  # хвост ограничен 4000 строк - леджер не растёт вечно
+  if ($rows.Count -gt 4000) { $rows = @($rows | Select-Object -Last 4000) }
+  $rows | Set-Content $f -Encoding UTF8
+}
+
+function Read-AgeLedger {
+  param([string]$Name, [int]$Minutes = 1440)
+  $f = Join-Path (Get-DataDir) ($Name + '.tsv')
+  $out = @{}
+  $cut = (Get-Date).AddMinutes(-$Minutes)
+  foreach ($l in @(Get-Content $f -ErrorAction SilentlyContinue)) {
+    $q = $l -split '\|'
+    if ($q.Count -lt 2) { continue }
+    $dt = New-Object DateTime 2000,1,1
+    if ([DateTime]::TryParse($q[$q.Count - 1], [ref]$dt) -and $dt -gt $cut) { $out[($q[0..($q.Count - 2)] -join '|')] = 1 }
+  }
+  return $out
+}
+
+# --- v12: динамическая репутация источников: доля ok/(ok+fail) из леджера src_health.tsv
+# (ведёт Save-RawList v9). Без истории - 0.5 (новичок должен уметь доказать себя),
+# карантин (3 сбоя подряд, 24ч) - 0. Считается на момент пробы: репутация живая.
+function Get-SourceRepMap {
+  Ensure-Dirs
+  $m = @{}
+  foreach ($l in @(Get-Content (Join-Path (Get-DataDir) 'src_health.tsv') -ErrorAction SilentlyContinue)) {
+    $q = $l -split '\|'
+    if ($q.Count -lt 4) { continue }
+    $ok = 0; $fail = 0
+    [void][int]::TryParse($q[1], [ref]$ok); [void][int]::TryParse($q[2], [ref]$fail)
+    $rep = 0.5
+    if (($ok + $fail) -gt 0) { $rep = $ok / ($ok + $fail) }
+    $quar = ''
+    if ($q.Count -ge 6) { $quar = $q[5] }
+    if ($quar -ne '') {
+      $qu = $null
+      try { $qu = [datetime]$quar } catch {}
+      if ($qu -and $qu -gt (Get-Date)) { $rep = 0.0 }
+    }
+    $m[$q[0]] = @{ rep = [Math]::Round($rep, 2); ok = $ok; fail = $fail }
+  }
+  return $m
 }
 
 # --- v9: универсальное ранжирование: дом авто, не дом-страна, соседи в хвост, класс дальности, разнообразие org ---
@@ -626,7 +698,8 @@ $cell65Required = @(
   'Test-HttpViaProxy','Get-GeoFact','Invoke-Parallel','Get-StateMap',
   'Get-Flag','Set-Flag','Set-CellState','Get-BoardText','Show-Board',
   'Show-KeyFacts','Invoke-WinInetRefresh','Test-CfIp',
-  'Get-DistanceKm','Get-SpbRing','Invoke-GeoBatch','Get-SpbRanked'
+  'Get-DistanceKm','Get-DistanceClass','Get-SpbRing','Invoke-GeoBatch','Get-SpbRanked',
+  'Add-AgeLedger','Read-AgeLedger','Get-SourceRepMap'
 )
 foreach ($f in $cell65Required) {
   if (-not (Get-Command -Name $f -ErrorAction SilentlyContinue)) {

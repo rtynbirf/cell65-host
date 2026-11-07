@@ -1,7 +1,9 @@
 ﻿# CELL-65 :: c04_probe.ps1 - ряд D: ПРОБА и ВЫБОР (клетки d1..d8)
 # Замеры: TCP-соединение (мс) и живой HTTP-запрос через прокси (generate_204).
-# Выбор (v3) = радиус СПБ (59.9386,30.3141): вне домена РФ, кольцо дистанции,
-# затем скорость. Гео - пачкой ip-api /batch. Это факт замера, не вердикт.
+# Выбор (v12) = универсальный: дом авто (Get-HomePoint), не дом-страна, соседи
+# в хвост, меритократия score, класс дальности (Get-DistanceClass), затем скорость.
+# Репутация источников (src_health) делит выборку d1, TCP-мёртвые сутки не ретраятся
+# (леджер tcpfail). Гео - пачкой ip-api /batch. Это факт замера, не вердикт.
 param([int]$Cell = 0)
 Import-Module (Join-Path (Split-Path -Parent $PSScriptRoot) 'lib65.psm1') -Force -DisableNameChecking
 
@@ -96,6 +98,11 @@ switch ($Cell) {
     $authKeys = @()
     if (Test-Path $authf1) { $authKeys = @(Get-Content $authf1 -Encoding UTF8 | ForEach-Object { $q1 = $_ -split '\|'; ($q1[0] + '|' + $q1[1] + '|' + $q1[2]) }) }
     $nAuthCut = 0
+    # v12 (ЖИЗНЬ-дефект): узлы, провалившие d2-пробу по TCP, больше не ретраятся сутки -
+    # леджер data\tcpfail.tsv (пишет d2), старение в lib65. ЖИЗНЬ при полной перепробе
+    # (h4) и очередные авто-циклы тратят время пробы на живых, а не на TCP-мёртвых.
+    $tcpFail = Read-AgeLedger -Name 'tcpfail' -Minutes 1440
+    $nTcpCut = 0
     foreach ($spec in @(@('http', 220), @('socks5', 220), @('socks4', 60))) {
       $sub = @($all | Where-Object { $_.StartsWith($spec[0] + '|') })
       if ($authKeys.Count -gt 0) {
@@ -103,13 +110,66 @@ switch ($Cell) {
         $sub = @($sub | Where-Object { $ak = ($_ -split '\|')[0..2] -join '|'; -not ($authKeys -contains $ak) })
         $nAuthCut += ($subAll - $sub.Count)
       }
+      if ($tcpFail.Count -gt 0) {
+        $subAll = $sub.Count
+        $sub = @($sub | Where-Object { $tk = ($_ -split '\|')[0..2] -join '|'; -not $tcpFail.ContainsKey($tk) })
+        $nTcpCut += ($subAll - $sub.Count)
+      }
       if ($sub.Count -eq 0) { Add-Log 'i' ('выборка ' + $spec[0] + ': пусто'); continue }
       $n = [Math]::Min($spec[1], $sub.Count)
-      $pick = @(Get-Random -InputObject $sub -Count $n)
+      # v12: динамическая репутация источников - квота источника пропорциональна его
+      # доле ok/(ok+fail) на момент пробы (новички 0.5, карантин 0); недобор добирается
+      # лучшими. Нет леджера или пул меньше квоты - ровный случайный семпл как в v9.
+      $pick = @()
+      $rep = Get-SourceRepMap
+      if ($sub.Count -gt $n -and $rep.Count -gt 0) {
+        $bySrc = @{}
+        foreach ($e in $sub) {
+          $f1 = $e -split '\|'
+          $s1 = 'unknown'
+          if ($f1.Count -ge 4 -and $f1[3] -ne '') { $s1 = $f1[3] }
+          if (-not $bySrc.ContainsKey($s1)) { $bySrc[$s1] = @() }
+          $bySrc[$s1] = @($bySrc[$s1]) + $e
+        }
+        $wMap = @{}; $wsum = 0.0
+        foreach ($s1 in @($bySrc.Keys)) {
+          $w1 = 0.5
+          if ($rep.ContainsKey($s1)) { $w1 = [double]$rep[$s1].rep }
+          $wMap[$s1] = $w1; $wsum += $w1
+        }
+        $alloc = @{}
+        if ($wsum -le 0) {
+          # все знакомые источники под карантином - ровный семпл (лучше попытка, чем простой)
+          $k0 = [Math]::Max(1, [int][Math]::Floor($n / @($bySrc.Keys).Count))
+          foreach ($s1 in @($bySrc.Keys)) { $alloc[$s1] = $k0 }
+        } else {
+          foreach ($s1 in @($bySrc.Keys)) {
+            $q1 = [int][Math]::Floor($n * $wMap[$s1] / $wsum)
+            if ($q1 -gt $bySrc[$s1].Count) { $q1 = $bySrc[$s1].Count }
+            $alloc[$s1] = $q1
+          }
+        }
+        $left = $n - [int]($alloc.Values | Measure-Object -Sum).Sum
+        foreach ($s1 in @($bySrc.Keys | Sort-Object { -$wMap[$_] })) {
+          if ($left -le 0) { break }
+          $room = $bySrc[$s1].Count - $alloc[$s1]
+          if ($room -le 0) { continue }
+          $take = [Math]::Min($room, $left)
+          $alloc[$s1] += $take; $left -= $take
+        }
+        foreach ($s1 in @($bySrc.Keys)) {
+          if ($alloc[$s1] -gt 0) { $pick = @($pick + @(Get-Random -InputObject $bySrc[$s1] -Count $alloc[$s1])) }
+        }
+        $repLine = @($bySrc.Keys | Sort-Object { -$wMap[$_] } | ForEach-Object { $_ + ' ' + $wMap[$_] + '->' + $alloc[$_] })
+        Add-Log 'i' ('репутация ' + $spec[0] + ': ' + ($repLine -join ', '))
+      } else {
+        $pick = @(Get-Random -InputObject $sub -Count $n)
+      }
       $samp = @($samp + $pick)
-      Add-Log 'i' ('выборка ' + $spec[0] + ': ' + $n + ' из ' + $sub.Count)
+      Add-Log 'i' ('выборка ' + $spec[0] + ': ' + $pick.Count + ' из ' + $sub.Count)
     }
     if ($nAuthCut -gt 0) { Add-Log 'i' ('исключены из выборки 407-узлы прошлых проб: ' + $nAuthCut) }
+    if ($nTcpCut -gt 0) { Add-Log 'i' ('исключены из выборки TCP-мёртвые за сутки (леджер tcpfail): ' + $nTcpCut) }
     # v9: лидер всегда в выборке - меритократия требует перепроверки действующего узла
     $b = Join-Path (Get-DataDir) 'best.json'
     if (Test-Path $b) {
@@ -132,8 +192,17 @@ switch ($Cell) {
     $items = @(Get-Content $sf | ForEach-Object { ($_ -split '\|')[0..2] -join '|' })
     Add-Log 'i' ('TCP-проба: ' + $items.Count + ' кандидатов, поток 32, таймаут 1.5с')
     $res = @(Invoke-Parallel -Items $items -Body $script:BodyTcp -Throttle 32)
+    $res = @($res | Where-Object { $_ })
     $res | Set-Content (Join-Path (Get-DataDir) 'tcp_ok.tsv') -Encoding UTF8
     Add-Log 'ok' ('TCP ответили: ' + $res.Count + ' из ' + $items.Count)
+    # v12: TCP-мёртвые -> леджер data\tcpfail.tsv (сутки, старение в lib65): d1 их
+    # больше не ретраит, ЖИЗНЬ не жжёт пробу повторно на тех, кто не ответил по TCP
+    $okKeys = @($res | ForEach-Object { ($_ -split '\|')[0..2] -join '|' })
+    $dead = @($items | Where-Object { $okKeys -notcontains $_ })
+    if ($dead.Count -gt 0) {
+      Add-AgeLedger -Name 'tcpfail' -Keys $dead
+      Add-Log 'i' ('TCP-мёртвые (сутки без ретрая): ' + $dead.Count + ' -> data\tcpfail.tsv')
+    }
   } }
 
   3 { Run-Cell 'd' 3 {
