@@ -1,0 +1,31 @@
+{
+ "schema": "wave3/pac-matrix@1",
+ "note": "Открытый JSON-контракт роя: матрица PAC 12 URL × 4 сценария отказа. Узлы — только зарезервированные имена (RFC 6761 example.invalid и RFC 1918 приватные диапазоны), реальные адреса не требуются. Ожидания заморожены: гейт сверяет строку лестницы побайтово.",
+ "ladder": ["PROXY primary.example:1080", "PROXY backup.example:1080", "SOCKS5 relay.example:1080", "DIRECT"],
+ "scenarios": {
+  "live": "все звенья живы — полная лестница в точном порядке",
+  "first_down": "первое звено не отвечает — переход ко второму (fallback работает)",
+  "auth_407": "прокси отвечает 407 — звено считается отказавшим, лестница его пропускает",
+  "direct_only": "режим DIRECT-only — вся лестница схлопывается в DIRECT"
+ },
+ "expect_external": {
+  "live": "PROXY primary.example:1080; PROXY backup.example:1080; SOCKS5 relay.example:1080; DIRECT",
+  "first_down": "PROXY backup.example:1080; SOCKS5 relay.example:1080; DIRECT",
+  "auth_407": "PROXY backup.example:1080; SOCKS5 relay.example:1080; DIRECT",
+  "direct_only": "DIRECT"
+ },
+ "cases": [
+  {"url": "http://localhost:8080/", "class": "local", "expect": {"live": "DIRECT", "first_down": "DIRECT", "auth_407": "DIRECT", "direct_only": "DIRECT"}},
+  {"url": "http://127.0.0.1:3000/", "class": "local", "expect": {"live": "DIRECT", "first_down": "DIRECT", "auth_407": "DIRECT", "direct_only": "DIRECT"}},
+  {"url": "http://192.168.1.10/", "class": "local", "expect": {"live": "DIRECT", "first_down": "DIRECT", "auth_407": "DIRECT", "direct_only": "DIRECT"}},
+  {"url": "http://10.0.0.7/", "class": "local", "expect": {"live": "DIRECT", "first_down": "DIRECT", "auth_407": "DIRECT", "direct_only": "DIRECT"}},
+  {"url": "https://site-a.example/", "class": "external", "expect_ref": "expect_external"},
+  {"url": "https://site-b.example/", "class": "external", "expect_ref": "expect_external"},
+  {"url": "https://site-c.example/", "class": "external", "expect_ref": "expect_external"},
+  {"url": "https://site-d.example/", "class": "external", "expect_ref": "expect_external"},
+  {"url": "https://site-e.example/", "class": "external", "expect_ref": "expect_external"},
+  {"url": "https://site-f.example/", "class": "external", "expect_ref": "expect_external"},
+  {"url": "https://site-g.example/", "class": "external", "expect_ref": "expect_external"},
+  {"url": "https://site-h.example/", "class": "external", "expect_ref": "expect_external"}
+ ]
+}
