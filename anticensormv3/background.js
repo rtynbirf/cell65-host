@@ -218,7 +218,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
           return;
         }
         try {
-          const resp = await fetch(url, { cache: 'no-store' });
+          const resp = await fetch(url, { cache: 'no-store' }); /* wave3-allowlist: pac-probe — URL из runtime-сообщения, не хардкод; GET без отправки данных (исключение с маркером, T16) */
           const text = await resp.text();
           sendResponse({
             ok: true,

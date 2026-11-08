@@ -22,3 +22,13 @@ jobs:
           python3 -m json.tool anticensormv3/manifest.json > /dev/null && echo "manifest.json OK"
           python3 -m json.tool anticensormv3/rules/ads.json > /dev/null && echo "ads.json OK"
           python3 -m json.tool anticensormv3/rules/trackers.json > /dev/null && echo "trackers.json OK"
+
+  anticensor-gates:
+    name: Антиценз-пробы (PAC-матрица · DNR · WebRTC · приватность)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Самотест проб
+        run: python3 wave3/gate_probes.py --selftest
+      - name: Четыре гейта волны ×3
+        run: python3 wave3/gate_probes.py

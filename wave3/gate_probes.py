@@ -96,6 +96,7 @@ def probe_dnr(root):
     return not bad
 def _scan_privacy(dirs, echo=''):
     hits = []
+    allowed = []
     for d in dirs:
         for p in sorted(d.rglob('*')):
             if not p.is_file() or any(s in p.parts for s in SKIP_DIRS) or p.suffix in ('.png', '.jpg', '.ico', '.zip', '.crx'):
@@ -105,14 +106,22 @@ def _scan_privacy(dirs, echo=''):
             except OSError:
                 continue
             for i, line in enumerate(text.splitlines(), 1):
+                # Исключение с маркером (T16): строка с явным маркером
+                # «wave3-allowlist:» пропускается сканером и печатается
+                # в отчёте как задокументированное исключение.
+                if 'wave3-allowlist:' in line:
+                    allowed.append((p, i))
+                    continue
                 for name, rx in PATTERNS.items():
                     if rx.search(line) and not (echo and echo in line):
                         hits.append((p, i, name))
-    return hits
+    return hits, allowed
 def probe_privacy(root, echo=''):
     base = root / 'anticensormv3'
     dirs = [base] if base.exists() else [root]
-    hits = _scan_privacy(dirs, echo)
+    hits, allowed = _scan_privacy(dirs, echo)
+    for p, i in allowed:
+        print('⏭    приватность: %s:%d — исключение с маркером (T16, обоснование в строке)' % (p, i))
     for p, i, name in hits:
         print('FAIL приватность: %s:%d — %s вне allowlist' % (p, i, name))
     if not hits: print('OK   приватность: ноль fetch/XHR/beacon вне allowlist (эхо: %s)' % (echo or 'не задан'))
@@ -148,9 +157,14 @@ def selftest():
         ext = t / 'ext'; ext.mkdir()
         (ext / 'bg.js').write_text('fetch("https://tracker.example/collect")\n', encoding='utf-8')
         (ext / 'echo.js').write_text('fetch("https://echo.example/ping")\n', encoding='utf-8')
-        if [(x[0].name, x[2]) for x in _scan_privacy([ext], 'https://echo.example')] != [('bg.js', 'fetch()')]:
-            fails.append('сканер приватности/allowlist: %s' % _scan_privacy([ext], 'https://echo.example'))
-        if len(_scan_privacy([ext], '')) != 2: fails.append('без allowlist должны ловиться обе строки')
+        (ext / 'marker.js').write_text('fetch(url) /* wave3-allowlist: тест маркера — обоснование в строке */\n', encoding='utf-8')
+        h_echo, a_echo = _scan_privacy([ext], 'https://echo.example')
+        if [(x[0].name, x[2]) for x in h_echo] != [('bg.js', 'fetch()')]:
+            fails.append('сканер приватности/allowlist: %s' % (h_echo,))
+        h_raw, a_raw = _scan_privacy([ext], '')
+        if len(h_raw) != 2: fails.append('без allowlist должны ловиться обе строки')
+        # исключение с маркером (T16): маркерная строка не ловится, фиксируется как allowed
+        if not a_raw: fails.append('маркерная строка должна попадать в allowed-отчёт')
         (ext / 'rtc.js').write_text('const pc = new RTCPeerConnection({});\n', encoding='utf-8')
         if probe_webrtc(ext): fails.append('PC без guard должен быть красным')
         (ext / 'rtc.js').write_text('const pc = new RTCPeerConnection({}); pc.webRTCIPHandlingPolicy = "proxy";\n', encoding='utf-8')
