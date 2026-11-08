@@ -5,6 +5,9 @@ on:
     paths: ['sovereign-node/**', '.github/workflows/selftest.yml']
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   server-e2e:
     name: "Сервер: полная установка (Ubuntu 24.04)"
