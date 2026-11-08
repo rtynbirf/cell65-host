@@ -1,0 +1,40 @@
+# cell65-host
+> «Антицензор» MV3: Chrome-расширение обхода блокировок (PAC/DNR/WebRTC/auth-прокси) + sovereign-node (sing-box, PAC-сервер, Windows-скрипты). Без телеметрии. Человеком для человека.
+
+Автоген 2026-11-08 · источник: живой GitHub API (номера и файлы не руками) · владелец rtynbirf · ветка `main`
+
+## Мембрана
+- README.md — для человека (cell65-host)
+- AGENTS.md — есть
+- LICENSE — MIT
+- topics: adblock, anti-censorship, chrome-extension, dnr, mv3, pac, privacy, proxy, sing-box, sovereign-node, system-layer, webrtc
+
+## Карта корня
+- .github/
+- .gitignore
+- .nojekyll
+- AGENTS.md
+- CHANGELOG.md
+- CODEOWNERS
+- CODE_OF_CONDUCT.md
+- CONTRIBUTING.md
+- LICENSE
+- MAILBOX.md
+- PULSE.md
+- README.md
+- RESTORE.md
+- SECURITY.md
+- anticensormv3/
+- … ещё 5
+
+## CI
+- workflow: bundle-backup
+- workflow: ci
+- workflow: release
+- workflow: self-audit
+- workflow: selftest
+
+## Ссылки
+- [GitHub](https://github.com/rtynbirf/cell65-host)
+- [README](https://github.com/rtynbirf/cell65-host/blob/main/README.md)
+- [raw llms.txt](https://raw.githubusercontent.com/rtynbirf/cell65-host/main/llms.txt)
