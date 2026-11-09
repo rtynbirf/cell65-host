@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="banner.png" alt="cell65-host — «Антицензор» MV3 — расширение Chrome для обхода блокировок" width="100%">
+</div>
+
 # cell65-host
 
 <p align="center"><img src=".github/social-preview.png" alt="cell65-host" width="100%"></p>
