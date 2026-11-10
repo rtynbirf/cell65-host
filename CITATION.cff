@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "Если используете этот проект, процитируйте его так."
+title: "cell65-host"
+abstract: "«Антицензор» MV3: Chrome-расширение обхода блокировок (PAC/DNR/WebRTC/auth-прокси) + sovereign-node (sing-box, PAC-сервер, Windows-скрипты). Без телеметрии. Человеком для человека."
+authors:
+  - name: "Полимат-Универсум (rtynbirf)"
+repository-code: "https://github.com/rtynbirf/cell65-host"
+license: "MIT"
