@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false  # x15 zizmor artipacked
 
       - name: Фиктивные ключи и server.env
         run: |
@@ -85,6 +87,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false  # x15 zizmor artipacked
 
       - name: Установка sing-box
         shell: pwsh
