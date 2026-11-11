@@ -2,6 +2,15 @@
   <img src="banner.png" alt="cell65-host — «Антицензор» MV3 — расширение Chrome для обхода блокировок" width="100%">
 </div>
 
+<!--ФОРЖ:МУЗА:НАЧАЛО-->
+<div align="center">
+  <img src="repo-muse.svg" width="100%" alt="Муза cell65-host: картина кузни ПОЛИМАТ, раунд 8" />
+  <br/>
+  <img src="forge-divider.svg" width="62%" alt="разделитель кузни ПОЛИМАТ" />
+</div>
+<!--ФОРЖ:МУЗА:КОНЕЦ-->
+
+
 # cell65-host
 
 <p align="center"><img src=".github/social-preview.png" alt="cell65-host" width="100%"></p>
@@ -163,3 +172,10 @@ cell65-host/
 ## 10. Синхронизация со стоящей задачей «храним в репе»
 
 Рабочая копия — `git`-репозиторий с историей коммитов. Push выполняется рабочим токеном (файл `/tmp/.ghtoken`, креды не попадают в URL). Бэкапы: `git bundle` + zip снимка дерева + zip папки расширения — в `download/`.
+
+<!--ФОРЖ:ПОДВАЛ-->
+---
+
+<div align="center">
+  <sub>◆ картина и штандарт — ручная ковка <a href="https://github.com/rtynbirf">КУЗНИ ПОЛИМАТ</a> · ЧЕЛОВЕК=АККАУНТ=PID1 ◆</sub>
+</div>
