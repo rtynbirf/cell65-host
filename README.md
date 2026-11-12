@@ -32,6 +32,13 @@
    120 core-часов/мес = 60 ч, без карты и телефона): gost внутри +
    SSH-туннель gh CLI + супервизор `65-codespace.ps1` со сторожем.
    Быстрый старт — [sovereign-node/codespace/README.md](sovereign-node/codespace/README.md).
+
+Близнец по Manifest V3 — [free-man](https://github.com/rtynbirf/free-man): там FREE MAN
+(блокировка слежки ИИ-сервисов: 72 домена, DNR, пауза по сайту), здесь cell65-host
+«Антицензор» (обход блокировок: PAC/DNR/WebRTC/прокси). Две половины одной автономии
+браузера: один открывает доступ, другой закрывает слежку. Общий принцип обоих —
+без аккаунта, сервера и телеметрии.
+
 - Лицензия — [LICENSE](LICENSE) (MIT). Сообщения об уязвимостях — [SECURITY.md](SECURITY.md).
 
 ---
