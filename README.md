@@ -4,11 +4,12 @@
 
 <!--ФОРЖ:МУЗА:НАЧАЛО-->
 <div align="center">
-  <img src="repo-muse.svg" width="100%" alt="Муза cell65-host: картина кузни ПОЛИМАТ, раунд 8" />
+  <img src="repo-muse.svg" width="100%" alt="Муза cell65-host: мастерская КАЛДЕР · МОБИЛЬ, кузня ПОЛИМАТ, раунд 11" />
   <br/>
-  <img src="forge-divider.svg" width="62%" alt="разделитель кузни ПОЛИМАТ" />
+  <img src="forge-divider.svg" width="62%" alt="делитель мастерской КАЛДЕР · МОБИЛЬ" />
 </div>
 <!--ФОРЖ:МУЗА:КОНЕЦ-->
+
 
 
 # cell65-host
