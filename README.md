@@ -21,8 +21,8 @@
 
 1. **[sovereign-node/](sovereign-node/)** — СУВЕРЕННЫЙ УЗЕЛ: личный anti-censorship
    комплект «настроил и забыл». Один бинарь sing-box на Windows 11, один VPS,
-   лестница из трёх независимых транспортов (VLESS+Reality / VLESS+WS за Cloudflare
-   CDN / Hysteria2) с авторотацией, развязка RU/не-RU. Архитектура, модель угроз
+   лестница из четырёх независимых транспортов (VLESS+Reality / VLESS+WS за
+   Cloudflare CDN / Hysteria2 / AnyTLS против TLS-in-TLS) с авторотацией, развязка RU/не-RU. Архитектура, модель угроз
    и быстрый старт — в [sovereign-node/README.md](sovereign-node/README.md).
 2. **[anticensormv3/](anticensormv3/)** — расширение Chrome **Manifest V3** «Антицензор»
    (v1.1.0): PAC-роутинг через локальный прокси, hosts-блокировка рекламы/трекеров
