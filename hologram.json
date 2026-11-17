@@ -2,7 +2,7 @@
  "hologram": 1,
  "root": "c223bd4a2f6a56783c1fbdb1b1f671fa61c3150ecf320c82796ea5763043a696",
  "n": 73,
- "storage": 68,
+ "storage": 36,
  "r": 3,
  "self": {
   "name": "cell65-host",
@@ -328,6 +328,18 @@
    "desc": "POLIMAT-HUB: место сверок мультиагента-архитектора. Архитектура, журнал операций, пломбы, stdlib-инструменты.",
    "lang": "Python",
    "cluster": "HUB"
+  },
+  {
+   "name": "rent-mechanism-q43",
+   "desc": "Рентный механизм: ядро Q43 v2, шесть законов L1-L6, инвариант I_K. Машинная программа R11-R49 (наблюдение -> атака -> патч).",
+   "lang": "Python",
+   "cluster": ""
+  },
+  {
+   "name": "task-graph-propagator",
+   "desc": "Task Graph Engine: один пропагатор — все функции структуры графа задач (полукольца, Кана, критпуть, резервы, надёжность, крэшинг)",
+   "lang": "Python",
+   "cluster": ""
   }
  ]
 }
