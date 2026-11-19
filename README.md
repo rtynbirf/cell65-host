@@ -1,4 +1,10 @@
 <div align="center">
+
+<a href="https://github.com/rtynbirf/cell65-host"><img src="banner.png" width="100%" alt="cell65-host — штандарт мастерской в каноне ORNAMENTAL MYTHO-REALISM"></a>
+
+</div>
+
+<div align="center">
   <img src="https://cdn.jsdelivr.net/gh/rtynbirf/cell65-host@main/banner.png" alt="cell65-host — «Антицензор» MV3 — расширение Chrome для обхода блокировок" width="100%">
 </div>
 
@@ -17,7 +23,7 @@
 
 | ФАЙЛОВ | ПАПОК | КОММИТОВ | ОБНОВЛЕНО | РЕЛИЗОВ |
 |---:|---:|---:|---|---:|
-| 148 | 32 | 191 | 2026-11-19 | 2 |
+| 148 | 32 | 192 | 2026-11-19 | 0 |
 <!--ФОРЖ:ПАСПОРТ:КОНЕЦ-->
 
 

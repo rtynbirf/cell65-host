@@ -10,7 +10,7 @@
 import hashlib, json, os, re, subprocess
 
 try:
-    CFG = json.loads(r'''{"name": "cell65-host", "num": 8, "school": "КАЛДЕР · МОБИЛЬ", "desc": "cell65-host — Антицензор (Chrome MV3): PAC/DNR/WebRTC-защита, hosts-блокировка, обход блокировок", "topics": ["anticensorship", "chrome-extension", "declarative-net-request", "manifest-v3", "pac-proxy"], "releases": 2, "palette": {"bg": "#0C2E21", "bg2": "#14402E", "ink": "#EFE7D2", "gold": "#D4AF37", "gold2": "#E8C868", "dim": "#8FB09C", "accent": "#C43B27"}}''')
+    CFG = json.loads(r'''{"name": "cell65-host", "num": 8, "school": "НОВОСТРОЙ РОЯ", "desc": "cell65-host — Антицензор (Chrome MV3): PAC/DNR/WebRTC-защита, hosts-блокировка, обход блокировок", "topics": ["anticensorship", "chrome-extension", "declarative-net-request", "manifest-v3"], "releases": 0, "palette": {"bg": "#0C2E21", "bg2": "#14402E", "ink": "#EFE7D2", "gold": "#D4AF37", "gold2": "#E8C868", "dim": "#8FB09C", "accent": "#C43B27"}}''')
 except Exception:
     CFG = {"name": "REVO", "num": 0, "school": "", "desc": "", "topics": [], "releases": 0,
            "palette": dict(bg="#EFE6CF", bg2="#F6EFDC", ink="#241C10", gold="#9A7B23",
