@@ -35,16 +35,16 @@
 
 Личный инфраструктурный хост. В репозитории — три независимые линии:
 
-1. **[sovereign-node/](sovereign-node/)** — СУВЕРЕННЫЙ УЗЕЛ: личный anti-censorship
+1. **[sovereign-node/](https://github.com/rtynbirf/cell65-host/tree/main/sovereign-node)** — СУВЕРЕННЫЙ УЗЕЛ: личный anti-censorship
    комплект «настроил и забыл». Один бинарь sing-box на Windows 11, один VPS,
    лестница из четырёх независимых транспортов (VLESS+Reality / VLESS+WS за
    Cloudflare CDN / Hysteria2 / AnyTLS против TLS-in-TLS) с авторотацией, развязка RU/не-RU. Архитектура, модель угроз
    и быстрый старт — в [sovereign-node/README.md](sovereign-node/README.md).
-2. **[anticensormv3/](anticensormv3/)** — расширение Chrome **Manifest V3** «Антицензор»
+2. **[anticensormv3/](https://github.com/rtynbirf/cell65-host/tree/main/anticensormv3)** — расширение Chrome **Manifest V3** «Антицензор»
    (v1.1.0): PAC-роутинг через локальный прокси, hosts-блокировка рекламы/трекеров
    (declarativeNetRequest), чистая новая вкладка, WebRTC-защита. Полная документация —
    ниже и в [docs/SOURCES.md](docs/SOURCES.md).
-3. **[sovereign-node/codespace/](sovereign-node/codespace/)** — CODESPACE-УЗЕЛ:
+3. **[sovereign-node/codespace/](https://github.com/rtynbirf/cell65-host/tree/main/sovereign-node/codespace)** — CODESPACE-УЗЕЛ:
    бесплатная личная прокси-машина на GitHub Codespaces (2 ядра/8 ГБ,
    120 core-часов/мес = 60 ч, без карты и телефона): gost внутри +
    SSH-туннель gh CLI + супервизор `65-codespace.ps1` со сторожем.
