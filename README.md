@@ -4,10 +4,6 @@
 
 </div>
 
-<div align="center">
-  <img src="https://cdn.jsdelivr.net/gh/rtynbirf/cell65-host@main/banner.png" alt="cell65-host — «Антицензор» MV3 — расширение Chrome для обхода блокировок" width="100%">
-</div>
-
 <!--ФОРЖ:МУЗА:НАЧАЛО-->
 <div align="center">
   <img src="https://cdn.jsdelivr.net/gh/rtynbirf/cell65-host@main/repo-muse.svg" width="100%" alt="Муза cell65-host: мастерская КАЛДЕР · МОБИЛЬ, кузня ПОЛИМАТ, раунд 12 · REVE=РЕВО" />
@@ -18,13 +14,29 @@
 
 <!--ФОРЖ:ПАСПОРТ:НАЧАЛО-->
 <div align="center">
-  <img src="revo-page.svg" width="100%" alt="РЕВО-паспорт страницы cell65-host в каноне ORNAMENTAL MYTHO-REALISM: орнаментальная решётка, медальон-миф, строение файлов, лексикон — по фактическому контенту" />
+  <img src="revo-page.svg" width="100%" alt="РЕВО-паспорт страницы cell65-host №8 в каноне ORNAMENTAL MYTHO-REALISM: орнаментальная решётка, медальон-миф, строение файлов, лексикон — по фактическому контенту" />
 </div>
 
 | ФАЙЛОВ | ПАПОК | КОММИТОВ | ОБНОВЛЕНО | РЕЛИЗОВ |
 |---:|---:|---:|---|---:|
-| 156 | 33 | 257 | 2026-11-28 | 2 |
+| 156 | 34 | 1 | 2026-11-28 | 2 |
 <!--ФОРЖ:ПАСПОРТ:КОНЕЦ-->
+
+# cell65-host
+
+<div align="center">
+
+<a href="https://github.com/rtynbirf/cell65-host"><img src="banner.png" width="100%" alt="cell65-host — штандарт мастерской в каноне ORNAMENTAL MYTHO-REALISM"></a>
+
+</div>
+
+<div align="center">
+  <img src="https://cdn.jsdelivr.net/gh/rtynbirf/cell65-host@main/banner.png" alt="cell65-host — «Антицензор» MV3 — расширение Chrome для обхода блокировок" width="100%">
+</div>
+
+
+
+
 
 
 
